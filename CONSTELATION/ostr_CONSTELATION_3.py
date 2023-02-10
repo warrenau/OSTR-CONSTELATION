@@ -1,10 +1,10 @@
 ############################################################
 #                                                           #
-#          STAR and Serpent Coupling Script v 0.5.1         #
-#                   CONSTELLATION                           #
+#          STAR and Serpent Coupling Script v 0.6           #
+#                   CONSTELATION                            #
 #                                                           #
-# Created by: Cole Leingang                 2020/01/10      #
-# Modified by: Austin Warren                2022/09/07      #
+# Based on work created by Cole Leingang    2020/01/10      #
+# Modified/ rewritten by: Austin Warren     2023/02/10      #
 #############################################################
 
 import os
@@ -16,8 +16,15 @@ import pandas as pd
 import numpy as np
 import re
 from shutil import copyfile
+
+
+# Time steps need to match up between STAR-CCM+ and Serpent 2 so the information passed between them is happening at the same time. This does not define the time steps for the respective codes.
 # timestep used for simulation
 timestep = 5E-6
+# The number of time steps that STAR will simulate before checking for SERPENT completion and then export Data
+STAR_STEP = 100
+# Second variables used to stay constant in loop
+step_length = 100
 
 #######################################################
 # Create the Serpent input-file for this run          #
@@ -25,11 +32,9 @@ timestep = 5E-6
 #######################################################
 
 # Open original input for reading
-
 file_in = open(r'Treat', 'r')
 
 # Open a new input file for writing
-
 file_out = open(r'coupledTreat', 'w')
 
 # Write original input to new file
@@ -38,8 +43,8 @@ for line in file_in:
     file_out.write(line)
 
 # Close original input file
-
 file_in.close()
+
 # Append Source File Location
 file_out.write('\n')
 file_out.write('set dynsrc Source 1\n')
@@ -49,43 +54,35 @@ file_out.write('\n')
 file_out.write('set gcu -1\n')
 
 # Append signalling mode
-
 file_out.write('\n')
 file_out.write('set comfile com.in com.out\n')
 
 # Append interface names
-
 file_out.write('\n')
-file_out.write('ifc HE3TOP.ifc\n\n')
+file_out.write('ifc HE3.ifc\n\n')
 file_out.write('\n')
 file_out.write('ifc fuel.ifc\n\n')  # not sure that I will use the fuel ifc, but will leave in for now
 
 # Close new input file
-
 file_out.close()
-# The number of time steps that STAR will simulate before checking for SERPENT completion and then export Data
-STAR_STEP = 100
-# Second variables used to stay constant in loop
-step_length = 100
+
 
 ##############################################
 # Write the initial He3 interface file for 1st Star Run                      #
 # (He3 temperature and density for top two HENRI's will be updated)          #
 ##############################################
-
-file_out = open('HE3TOP.ifc', 'w')
+# open interface file
+file_out = open('HE3.ifc', 'w')
 
 # Write the header line (TYPE MAT OUT)
-
-file_out.write('2  He3Top 0\n')
+file_out.write('2  helium3 0\n')
 
 # Write the mesh type
-
 file_out.write('1\n')
 
 # Write the mesh data (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
-
-file_out.write('1 -100 100 1 0 100 500 -60.48375 60.48375\n')
+# using z values between bottom of top grid plate and top of bottom grid plate
+file_out.write('1 -100 100 1 0 100 500 -33.02 30.78\n')
 
 # Write the Mesh Data
 STAR_Points = 501
