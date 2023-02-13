@@ -61,7 +61,7 @@ file_out.write('set comfile com.in com.out\n')
 file_out.write('\n')
 file_out.write('ifc HE3.ifc\n\n')
 file_out.write('\n')
-file_out.write('ifc fuel.ifc\n\n')  # not sure that I will use the fuel ifc, but will leave in for now
+#file_out.write('ifc fuel.ifc\n\n')  # not sure that I will use the fuel ifc, but will leave in for now
 
 # Close new input file
 file_out.close()
@@ -115,8 +115,8 @@ if os.path.isfile(filename):
     np.savetxt(file_out, denstemp, fmt="%1.6f")
 else:
     raise ValueError("%s has not been created or could not be read" % filename)
-# Close interface file
 
+# Close interface file
 file_out.close()
 
 
@@ -124,29 +124,7 @@ file_out.close()
 # Write the initial fuel interface           #
 ##############################################
 
-file_out = open('fuel.ifc', 'w')
-
-# Write the header line (TYPE MAT OUT)
-
-file_out.write('2  fuel1 0\n')
-
-# Write the mesh type
-
-file_out.write('1\n')
-
-# Write the mesh data (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
-
-file_out.write('1 -200 200 1 -200 200 10 -60.48375 60.48375\n')
-
-# Write initial fuel temperatures and densities
-# TREAT has graphite mixed fuel (hence low density close to graphite)
-
-for i in range(10):
-    file_out.write('-1.72 300.0\n')
-
-# Close interface file
-
-file_out.close()
+# leaving out fuel interface file for now. might add back in later
 
 ############################################
 # Initialize the fuel temperature solution #
@@ -200,21 +178,34 @@ while simulating == 1:
         line = fin.readline()
         # Close file
         fin.close()
+        # check if signal can be read due to problems of empty files in previous simulations
+        f_digit = line.strip('-\n\r').isdigit()
+        sig_notdigit = 42
+        if f_digit:
+            line_int = int(line)
+        elif not f_digit:
+            line_int = sig_notdigit
+        else:
+            print('The com.out file does not exist or cannot be read.')
         # Check signal
-        
-        if int(line) != -1:
-            if int(line) == signal.SIGUSR1:
+        if line_int != -1:
+            if line_int == signal.SIGUSR1:
                 # Got the signal to resume
                 print(signal.SIGUSR1)
                 print("Resume Current Iteration")
                 sleeping = 0
-            elif int(line) == signal.SIGUSR2:
+            if line_int == sig_notdigit:
+                # Could not turn the contents of com.out into an integer. Continue and try again.
+                print(sig_notdigit)
+                print("Resume Current Iteration")
+                sleeping = 0
+            elif line_int == signal.SIGUSR2:
                 # Got the signal to move to next time point
                 print(signal.SIGUSR2)
                 print('Move to Next Time Step')
                 iterating = 0
                 sleeping = 0
-            elif int(line) == signal.SIGTERM:
+            elif line_int == signal.SIGTERM:
                 # Got the signal to end the calculation
                 print(signal.SIGTERM)
                 print('END The Simulation')
