@@ -26,6 +26,9 @@ STAR_STEP = 100
 # Second variables used to stay constant in loop
 step_length = 100
 
+# convert cubic centimeters to cubic meters
+cm3_to_m3 = 1E-6
+
 #######################################################
 # Create the Serpent input-file for this run          #
 # (process id or communication file must be appended) #
@@ -432,8 +435,8 @@ while simulating == 1:
          data_pass[point] = data_pass[point]*0
 
      else:
-     # Converts Mean Values of MeV/cm^3 to J/m^3-s to pass to STAR-CCM+ 
-         data_pass[point] = (data_pass[point]*1E6)/timestep       # shouldn't there be a 1.602e-13 in here somewhere? going from MeV to J?
+     # Converts Mean Values of J/cm^3 to J/m^3-s to pass to STAR-CCM+ 
+         data_pass[point] = (data_pass[point]/cm3_to_m3)/timestep      
 
     # Converts cm to m
     for xpoint in nx:
