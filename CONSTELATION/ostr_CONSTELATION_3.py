@@ -189,7 +189,7 @@ while simulating == 1:
             print('The com.out file does not exist or cannot be read.')
         # Check signal
         if line_int != -1:
-            if line_int == signal.SIGUSR1:
+            if line_int == signal.SIGUSR1.value:
                 # Got the signal to resume
                 print(signal.SIGUSR1)
                 print("Resume Current Iteration")
@@ -199,13 +199,13 @@ while simulating == 1:
                 print(sig_notdigit)
                 print("Resume Current Iteration")
                 sleeping = 0
-            elif line_int == signal.SIGUSR2:
+            elif line_int == signal.SIGUSR2.value:
                 # Got the signal to move to next time point
                 print(signal.SIGUSR2)
                 print('Move to Next Time Step')
                 iterating = 0
                 sleeping = 0
-            elif line_int == signal.SIGTERM:
+            elif line_int == signal.SIGTERM.value:
                 # Got the signal to end the calculation
                 print(signal.SIGTERM)
                 print('END The Simulation')
