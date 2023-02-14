@@ -32,10 +32,10 @@ step_length = 100
 #######################################################
 
 # Open original input for reading
-file_in = open(r'Treat', 'r')
+file_in = open(r'TRIGA', 'r')
 
 # Open a new input file for writing
-file_out = open(r'coupledTreat', 'w')
+file_out = open(r'coupledTRIGA', 'w')
 
 # Write original input to new file
 
@@ -231,8 +231,8 @@ while simulating == 1:
     #########################
     
     # First Convert given SERPENT2 output of .m file to .txt file to be manipulated            
-    outputfile = r'coupledTreat_det'+str(curtime) + '.m'
-    textfile = r'coupledTreat_det' + str(curtime) + '.txt'
+    outputfile = r'coupledTRIGA_det'+str(curtime) + '.m'
+    textfile = r'coupledTRIGA_det' + str(curtime) + '.txt'
     time_counter = 0
     while not os.path.exists(outputfile):
         time.sleep(1)
@@ -247,14 +247,14 @@ while simulating == 1:
 
     # if copying error has occured just replace with previous timestep (band-aid fix)
     if os.stat(textfile).st_size == 0:
-        name = r'coupledTreat_det'+str(curtime-1)
-        outputfile = r'coupledTreat_det'+str(curtime-1) + '.m'
-        textfile = r'coupledTreat_det' + str(curtime-1) + '.txt'
+        name = r'coupledTRIGA_det'+str(curtime-1)
+        outputfile = r'coupledTRIGA_det'+str(curtime-1) + '.m'
+        textfile = r'coupledTRIGA_det' + str(curtime-1) + '.txt'
         copyfile(outputfile, textfile)
         # print to outfile to keep track of copy errors
         print('Copy Error at TimeStep = ' + str(curtime))
     else:
-        name = r'coupledTreat_det'+str(curtime)
+        name = r'coupledTRIGA_det'+str(curtime)
     # Finds Heat Production Detector values from SERPENT2 Output
     HeadTop_pattern = re.compile(r"\DETSerpent2STop\s")
 
@@ -282,27 +282,21 @@ while simulating == 1:
     # Number of overall points
     points = Zpoints*Ypoints*Xpoints
 
-    def SERPENTExtract(f1, f2):
+    def SERPENTExtract(F1, f2):
         global data
         global data_pass
         global datafuel
         global data_fuelpass
-        global data_passBot
-        global dataBot
-        global YdataBot
         global Xdata
         global Ydata
         global Zdata
         global Fdata
         data_pass = []
         data = []
-        data_passBot = []
-        dataBot = []
         data_fuelpass = []
         datafuel = []
         Xdata = []
         Ydata = []
-        YdataBot = []
         Zdata = []
         for line in f1:
          matchx = Third_pattern.search(line)
