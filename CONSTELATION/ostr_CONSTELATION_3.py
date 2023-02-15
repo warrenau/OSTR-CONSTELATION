@@ -29,6 +29,18 @@ step_length = 100
 # convert cubic centimeters to cubic meters
 cm3_to_m3 = 1E-6
 
+# convert position data from Serpent to STAR, both units and reference frame
+reference_conversion_x = 20.405   # difference in reference frames in cm
+unit_conversion_x = 0             # multiplication factor for unit conversion
+reference_conversion_y = 40.605   # difference in reference frames in cm
+unit_conversion_y = -1/100        # multiplication factor for unit conversion
+reference_conversion_z = 226.7903 # difference in reference frames in cm
+unit_conversion_z = -1/100        # multiplication factor for unit conversion
+
+def position_Serpent_to_STAR(data,reference_conversion,unit_conversion):
+    data = (data-reference_conversion)*unit_conversion
+    return data
+
 #######################################################
 # Create the Serpent input-file for this run          #
 # (process id or communication file must be appended) #
@@ -441,14 +453,15 @@ while simulating == 1:
     # Converts cm to m
     for xpoint in nx:
      # Note: Due to STAR-CCM+ being a 2-D simulation, X-Values (which would be Z Values) are set to zero
-     Xdata[xpoint-1] = (Xdata[xpoint-1]-20.405)*0
+     Xdata[xpoint-1] = position_Serpent_to_STAR(Xdata[xpoint-1],reference_conversion_x,unit_conversion_x)
     for ypoint in ny:
         # Y-Values stay the same in both codes (subtract SERPENT Distance from Origin to get STAR-CCM+ relative distance)
-        Ydata[ypoint-1] = -1*(Ydata[ypoint-1]-40.605)/100
+        Ydata[ypoint-1] = position_Serpent_to_STAR(Ydata[ypoint-1],reference_conversion_y,unit_conversion_y)
 
     for zpoint in nz:
      # Note: Due to orientation of STAR-CCM+ simulation Z Values are X Values in STAR
-     Zdata[zpoint-1] = (Zdata[zpoint-1]/-100)+2.267903
+     Zdata[zpoint-1] = position_Serpent_to_STAR(Zdata[zpoint-1],reference_conversion_z,unit_conversion_z)
+     
     # Organizes Data to be passed to csv
     # Passes Top Data
     with open(r'STAR_HeatTop.csv', 'wb') as f2:
