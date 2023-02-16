@@ -426,9 +426,9 @@ while simulating == 1:
     #### Print Data to CSV in format recognized by STAR-CCM+ #
     ##########################################################
     Np = list(range(points))
-    nx = list(range(1,Xpoints+1))
-    ny = list(range(1,Ypoints+1))
-    nz = list(range(1,Zpoints+1))
+    nx = list(range(Xpoints))
+    ny = list(range(Ypoints))
+    nz = list(range(Zpoints))
     data_pass = [float(i) for i in data_pass]
 
     Xdata = [float(i) for i in Xdata]
@@ -453,15 +453,15 @@ while simulating == 1:
     # Converts cm to m
     for xpoint in nx:
      # Note: Due to STAR-CCM+ being a 2-D simulation, X-Values (which would be Z Values) are set to zero
-     Xdata[xpoint-1] = position_Serpent_to_STAR(Xdata[xpoint-1],reference_conversion_x,unit_conversion_x)
+     Xdata[xpoint] = position_Serpent_to_STAR(Xdata[xpoint],reference_conversion_x,unit_conversion_x)
     for ypoint in ny:
         # Y-Values stay the same in both codes (subtract SERPENT Distance from Origin to get STAR-CCM+ relative distance)
-        Ydata[ypoint-1] = position_Serpent_to_STAR(Ydata[ypoint-1],reference_conversion_y,unit_conversion_y)
+        Ydata[ypoint] = position_Serpent_to_STAR(Ydata[ypoint],reference_conversion_y,unit_conversion_y)
 
     for zpoint in nz:
      # Note: Due to orientation of STAR-CCM+ simulation Z Values are X Values in STAR
-     Zdata[zpoint-1] = position_Serpent_to_STAR(Zdata[zpoint-1],reference_conversion_z,unit_conversion_z)
-     
+     Zdata[zpoint] = position_Serpent_to_STAR(Zdata[zpoint],reference_conversion_z,unit_conversion_z)
+
     # Organizes Data to be passed to csv
     # Passes Top Data
     with open(r'STAR_HeatTop.csv', 'wb') as f2:
@@ -477,15 +477,15 @@ while simulating == 1:
          # Replaces X integer with actual location from SERPENT Output
          for xpoint in nx:
              if res[2] == xpoint:
-                 res[2] = Xdata[xpoint-1]
+                 res[2] = Xdata[xpoint]
          # Replaces Y integer with actual location from SERPENT Output
          for ypoint in ny:
              if res[1] == ypoint:
-                 res[1] = Ydata[ypoint-1]
+                 res[1] = Ydata[ypoint]
          # Replaces Z Integer with actual location from SERPENT Output
          for zpoint in nz:
              if res[0] == zpoint:
-                 res[0] = Zdata[zpoint-1]
+                 res[0] = Zdata[zpoint]
          # Adds Mean Value for that location
          res.append(data_pass[point])
          # Writes to csv
