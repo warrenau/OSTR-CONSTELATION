@@ -25,9 +25,12 @@ timestep = 5E-6
 STAR_STEP = 100
 # Second variables used to stay constant in loop
 step_length = 100
-
 # convert cubic centimeters to cubic meters
 cm3_to_m3 = 1E-6
+
+# mesh data (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
+helium_mesh = '1 -100 100 1 0 100 500 -33.02 30.78\n'
+fuel_mesh = '1 -500 500 1 -500 500 10 -33.02 30.78\n'
 
 # convert position data from Serpent to STAR, both units and reference frame
 reference_conversion_x = 20.405   # difference in reference frames in cm
@@ -97,7 +100,7 @@ file_out.write('1\n')
 
 # Write the mesh data (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
 # using z values between bottom of top grid plate and top of bottom grid plate
-file_out.write('1 -100 100 1 0 100 500 -33.02 30.78\n')
+file_out.write(helium_mesh)
 
 # Write the Mesh Data
 STAR_Points = 501
@@ -193,6 +196,7 @@ while simulating == 1:
         line = fin.readline()
         # Close file
         fin.close()
+
         # check if signal can be read due to problems of empty files in previous simulations
         f_digit = line.strip('-\n\r').isdigit()
         sig_notdigit = 42
@@ -202,41 +206,43 @@ while simulating == 1:
             line_int = sig_notdigit
         else:
             print('The com.out file does not exist or cannot be read.')
+
         # Check signal
-        if line_int != -1:
-            if line_int == signal.SIGUSR1.value:
-                # Got the signal to resume
-                print(signal.SIGUSR1)
-                print("Resume Current Iteration")
-                sleeping = 0
-            if line_int == sig_notdigit:
-                # Could not turn the contents of com.out into an integer. Continue and try again.
-                print(sig_notdigit)
-                print("Resume Current Iteration")
-                sleeping = 0
-            elif line_int == signal.SIGUSR2.value:
-                # Got the signal to move to next time point
-                print(signal.SIGUSR2)
-                print('Move to Next Time Step')
-                iterating = 0
-                sleeping = 0
-            elif line_int == signal.SIGTERM.value:
-                # Got the signal to end the calculation
-                print(signal.SIGTERM)
-                print('END The Simulation')
-                iterating = 0
-                sleeping = 0
-                simulating = 0
-            else:
-                # Unknown signal
-                print("\nUnknown signal read from file, exiting\n")
-                print(line)
-                # Exit
-                quit()
-            # Reset the signal in the file
-            file_out = open('com.out', 'w')
-            file_out.write('-1')
-            file_out.close()
+        if line_int == -1:
+            pass
+        elif line_int == signal.SIGUSR1.value:
+            # Got the signal to resume
+            print(signal.SIGUSR1)
+            print("Resume Current Iteration")
+            sleeping = 0
+        elif line_int == sig_notdigit:
+            # Could not turn the contents of com.out into an integer. Continue and try again.
+            print(sig_notdigit)
+            print("Resume Current Iteration")
+            sleeping = 0
+        elif line_int == signal.SIGUSR2.value:
+            # Got the signal to move to next time point
+            print(signal.SIGUSR2)
+            print('Move to Next Time Step')
+            iterating = 0
+            sleeping = 0
+        elif line_int == signal.SIGTERM.value:
+            # Got the signal to end the calculation
+            print(signal.SIGTERM)
+            print('END The Simulation')
+            iterating = 0
+            sleeping = 0
+            simulating = 0
+        else:
+            # Unknown signal
+            print("\nUnknown signal read from file, exiting\n")
+            print(line)
+            # Exit
+            quit()
+        # Reset the signal in the file
+        file_out = open('com.out', 'w')
+        file_out.write('-1')
+        file_out.close()
     # Check if simulation has finished and break out of iterating
     # loop
     if simulating == 0:
@@ -452,18 +458,17 @@ while simulating == 1:
 
     # Converts cm to m
     for xpoint in nx:
-     # Note: Due to STAR-CCM+ being a 2-D simulation, X-Values (which would be Z Values) are set to zero
-     Xdata[xpoint] = position_Serpent_to_STAR(Xdata[xpoint],reference_conversion_x,unit_conversion_x)
+        # Note: Due to STAR-CCM+ being a 2-D simulation, X-Values (which would be Z Values) are set to zero
+        Xdata[xpoint] = position_Serpent_to_STAR(Xdata[xpoint],reference_conversion_x,unit_conversion_x)
     for ypoint in ny:
         # Y-Values stay the same in both codes (subtract SERPENT Distance from Origin to get STAR-CCM+ relative distance)
         Ydata[ypoint] = position_Serpent_to_STAR(Ydata[ypoint],reference_conversion_y,unit_conversion_y)
-
     for zpoint in nz:
-     # Note: Due to orientation of STAR-CCM+ simulation Z Values are X Values in STAR
-     Zdata[zpoint] = position_Serpent_to_STAR(Zdata[zpoint],reference_conversion_z,unit_conversion_z)
+        # Note: Due to orientation of STAR-CCM+ simulation Z Values are X Values in STAR
+        Zdata[zpoint] = position_Serpent_to_STAR(Zdata[zpoint],reference_conversion_z,unit_conversion_z)
 
     # Organizes Data to be passed to csv
-    # Passes Top Data
+    # Passes Data
     with open(r'STAR_HeatTop.csv', 'wb') as f2:
         # Sets up Title Headers for STAR-CCM+
         Title = ['X(m)', 'Y(m)', 'Z(m)', 'VolumetricHeat(W/m^3)']
@@ -490,7 +495,6 @@ while simulating == 1:
          res.append(data_pass[point])
          # Writes to csv
          csv_writer.writerow(res)
-    # Passes Bottom Data
     
     if curtime == 0:
         ##############################################
@@ -502,7 +506,6 @@ while simulating == 1:
         os.system(run_STAR1)
 
     # check to see if STAR is done executing
-
     STARTop = r'./STARTopDone.txt'
     time_to_wait = 1000000
     time_counter = 0
@@ -516,6 +519,7 @@ while simulating == 1:
         file_out = open('./SerpentDone.txt','w')
         file_out.write('Done')
         file_out.close
+
     ###########################
     # Update Top interface        #
     ###########################
@@ -525,12 +529,10 @@ while simulating == 1:
     file_out.write('2  He3Top 0\n')
     
     # Write the mesh type
-    
     file_out.write('1\n')
-    
+
     # Write the mesh data (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
-    
-    file_out.write('1 -100 100 1 0 100 500 -60.48375 60.48375\n')
+    file_out.write(helium_mesh)
     
     # Check to see if STAR-CCM_ .csv file has been created and wait for a predetermined amount of time if it hasn't
     time_to_wait = 1000000
@@ -621,8 +623,7 @@ while simulating == 1:
     file_out.write('1\n')
 
     # Write the mesh size (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
-
-    file_out.write('1 -500 500 1 -500 500 10 -60.48375 60.48375\n')
+    file_out.write(fuel_mesh)
 
     # Write updated fuel temperatures
 
