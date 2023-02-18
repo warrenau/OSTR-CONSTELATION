@@ -8,3 +8,25 @@ This project utilizes the same software, structure, and coupling method as **CON
 - Python 3 (tested using Python 3.9 from the Anaconda distribution)
 - STAR-CCM+ (used version 2020.2.1 on INL HPC)
 - Serpent 2 (used version 2.1.31 on INL HPC)
+
+---
+# Functions
+
+
+## Detectors
+There are 12 columns in the Serpent 2 detector (Serpent manual):
+
+1. Value index
+2. Energy bin index
+3. Universe bin index
+4. Cell bin index
+5. Material bin index
+6. Lattice bin index
+7. Reaction bin index
+8. Z-mesh bin index
+9. Y-mesh bin index
+10. X-mesh bin index
+11. Mean value
+12. Relative statistical error
+
+The detectors defined for passing the Serpent 2 data to STAR-CCM+ are only binned with respect to the $x$, $y$, and $z$ meshes.

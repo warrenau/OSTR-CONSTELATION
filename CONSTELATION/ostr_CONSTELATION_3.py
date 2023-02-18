@@ -596,16 +596,13 @@ while simulating == 1:
         m = ((93.16*314)+(65.65*20)+(75.53*4)) * 12.1 * 1.72 * 1e-3
 
         # Calculate initial heat in this axial node
-
         Q = TBOI[i] * (cp * m)
 
         # The interface output is Joules in case of time dependent
         # simulation, no need to multiply with time step
-
         dQ = data_fuelpass[i]
 
         # Calculate new temperature based on new amount of heat
-
         TEOI[i] = (Q + dQ) / (cp * m)
 
     ###########################
@@ -615,22 +612,18 @@ while simulating == 1:
     file_out = open('./fuel.ifc', 'w')
 
     # Write the header line (TYPE MAT OUT)
-
     file_out.write('2 fuel 0\n')
 
     # Write the mesh type
-
     file_out.write('1\n')
 
     # Write the mesh size (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
     file_out.write(fuel_mesh)
 
     # Write updated fuel temperatures
-
     for i in range(10):
         # Use the base density throughout the simulation
         # Write density and temperature at this layer
-
         file_out.write('-1.72 {}\n'.format(TEOI[i]))
 
     file_out.close()
@@ -639,7 +632,7 @@ while simulating == 1:
     # Tell code to move to next timestep #
     ##########################################################
     file_out = open('com.in','w')
-    file_out.write(str(signal.SIGUSR2))
+    file_out.write(str(signal.SIGUSR2.value))
     file_out.close()
 
     ##########################################################
