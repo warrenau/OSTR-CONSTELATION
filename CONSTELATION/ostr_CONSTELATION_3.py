@@ -16,6 +16,7 @@ import pandas as pd
 import numpy as np
 import re
 from shutil import copyfile
+import serpentTools
 
 
 # Time steps need to match up between STAR-CCM+ and Serpent 2 so the information passed between them is happening at the same time. This does not define the time steps for the respective codes.
@@ -43,6 +44,24 @@ unit_conversion_z = -1/100        # multiplication factor for unit conversion
 def position_Serpent_to_STAR(data,reference_conversion,unit_conversion):
     data = (data-reference_conversion)*unit_conversion
     return data
+
+
+# file name and header for STAR csv file
+csv_outfile = r'STAR_HeatTop.csv'
+csv_Title = ['X(m)', 'Y(m)', 'Z(m)', 'VolumetricHeat(W/m^3)']
+# function to write out Serpent heating data to STAR csv
+def Serpent_to_Star_csv(detector,outfile,Title):
+    row = np.zeros(4)
+    with open(outfile, 'w') as f:
+        csv_writer = csv.writer(f)
+        csv_writer.writerow(Title)
+        for zpoint in range(detector.tallies.shape[0]):
+            for ypoint in range(detector.tallies.shape[1]):
+                row[0] = position_Serpent_to_STAR(detector.grids['Z'][zpoint,2],reference_conversion_z,unit_conversion_z)
+                row[1] = position_Serpent_to_STAR(detector.grids['Y'][ypoint,2],reference_conversion_y,unit_conversion_y)
+                row[2] = position_Serpent_to_STAR(detector.grids['X'][0,2],reference_conversion_x,unit_conversion_x)
+                row[3] = detector.tallies[zpoint,ypoint]*cm3_to_m3/timestep     # required to match units between the two sims. from J/cm^3 to W/m^3
+                csv_writer.writerow(row)
 
 #######################################################
 # Create the Serpent input-file for this run          #
@@ -251,9 +270,8 @@ while simulating == 1:
     # Import SERPENT2 Data ##
     #########################
     
-    # First Convert given SERPENT2 output of .m file to .txt file to be manipulated            
+    # check to make sure the detector file exists
     outputfile = r'coupledTRIGA_det'+str(curtime) + '.m'
-    textfile = r'coupledTRIGA_det' + str(curtime) + '.txt'
     time_counter = 0
     while not os.path.exists(outputfile):
         time.sleep(1)
@@ -261,240 +279,17 @@ while simulating == 1:
     if time_counter > SERPENTWait:
         raise ValueError("%s has not been created or could not be read" % Serpname)
         break
-    copyfile(outputfile, textfile)
-    ###########################################
-    # Collect Data from converted output file #
-    ###########################################
+    # read in detector file using serpentTools reader
+    Serpent_data = serpentTools.read(outputfile)
+    # use the serpentTools detector objects for the specified detectors
+    DETSerpent2STop = Serpent_data.detectors['Serpent2STop']
+    DETFuelDeposition = Serpent_data.detectors['FuelDeposition']
 
-    # if copying error has occured just replace with previous timestep (band-aid fix)
-    if os.stat(textfile).st_size == 0:
-        name = r'coupledTRIGA_det'+str(curtime-1)
-        outputfile = r'coupledTRIGA_det'+str(curtime-1) + '.m'
-        textfile = r'coupledTRIGA_det' + str(curtime-1) + '.txt'
-        copyfile(outputfile, textfile)
-        # print to outfile to keep track of copy errors
-        print('Copy Error at TimeStep = ' + str(curtime))
-    else:
-        name = r'coupledTRIGA_det'+str(curtime)
-    # Finds Heat Production Detector values from SERPENT2 Output
-    HeadTop_pattern = re.compile(r"\DETSerpent2STop\s")
-
-    # Finds Fuel Deposition Detector values from SERPENT2 Output
-    Fuel_pattern = re.compile(r"\DETFuelDepositon\s")
-    # Finds data after initial pattern has been found
-    data_pattern = re.compile(r'(\d+)\s*(\d+)\s*(.*)$')
-    # Finds Heat Production Detector Z values
-    Second_pattern = re.compile(r"DETSerpent2STopZ(.*)$")
-    # Second_pattern =  re.compile(r"DETSerpent2SBotZ(.*)$")
-    # Number of Z points
-    Zpoints = 500
-    # Number of Fuel points
-    Fpoints = 10
-    # Finds Heat Production Detector X values
-    Third_pattern = re.compile(r"DETSerpent2STopX(.*)$")
-    # ThirdBot_pattern =  re.compile(r"DETSerpent2SBotX(.*)$")
-    # Number of X points
-    Xpoints = 1
-    # Finds Heat Production Detector Y values
-    FourthTop_pattern = re.compile(r"DETSerpent2STopY(.*)$")
-
-    # Number of Y points
-    Ypoints = 5
-    # Number of overall points
-    points = Zpoints*Ypoints*Xpoints
-
-    def SERPENTExtract(F1, f2):
-        global data
-        global data_pass
-        global datafuel
-        global data_fuelpass
-        global Xdata
-        global Ydata
-        global Zdata
-        global Fdata
-        data_pass = []
-        data = []
-        data_fuelpass = []
-        datafuel = []
-        Xdata = []
-        Ydata = []
-        Zdata = []
-        for line in f1:
-         matchx = Third_pattern.search(line)
-         matchyTop = FourthTop_pattern.search(line)
-
-         matchz = Second_pattern.search(line)
-         matchTop = HeadTop_pattern.match(line)
-
-         matchfuel = Fuel_pattern.match(line)
-         # Finds Volumetric Heating for Top 2 HENRIs
-         if matchTop is not None:
-             iter = 0
-             for line in f1:
-                 matchpoints = data_pattern.search(line)
-                 if matchpoints is not None:
-                     savepoints = matchpoints.group(0)
-                     if iter < 10:
-                         # Save Data used to input x,y,z locations
-                         cleanpoints = savepoints[34:48]
-                         # Save Mean Value of Data
-                         cleanpass = savepoints[48:60]
-                         data.append(cleanpoints)
-                         data_pass.append(cleanpass)
-                     if iter < 999 and iter >= 10:
-                         # Save Data used to input x,y,z locations
-                         cleanpoints = savepoints[35:48]
-                         # Save Mean Value of Data
-                         cleanpass = savepoints[48:61]
-                         data.append(cleanpoints)
-                         data_pass.append(cleanpass)
-                     if iter >= 999: 
-                         # Save Data used to input x,y,z locations
-                         cleanpoints = savepoints[34:50]
-                         # Save Mean Value of Data
-                         cleanpass = savepoints[51:63]
-                         data.append(cleanpoints)
-                         data_pass.append(cleanpass)
-                     iter = iter +1
-                     if iter == points:
-                         break
-         # Finds and saves fuel deposition values
-         if matchfuel is not None:
-             iter = 0
-             for line in f1:
-                 matchpoints = data_pattern.search(line)
-                 if matchpoints is not None:
-                     savepoints = matchpoints.group(0)
-                     if iter < 10:
-                         # Save Data used to input x,y,z locations
-                         cleanpoints = savepoints[34:48]
-                         # Save Mean Value of Data
-                         cleanpass = savepoints[48:60]
-                         datafuel.append(cleanpoints)
-                         data_fuelpass.append(cleanpass)
-                     if iter < 999 and iter >= 10:
-                         # Save Data used to input x,y,z locations
-                         cleanpoints = savepoints[35:48]
-                         # Save Mean Value of Data
-                         cleanpass = savepoints[48:61]
-                         datafuel.append(cleanpoints)
-                         data_fuelpass.append(cleanpass)
-                     if iter >= 999:
-                         # Save Data used to input x,y,z locations
-                         cleanpoints = savepoints[34:50]
-                         # Save Mean Value of Data
-                         cleanpass = savepoints[51:63]
-                         datafuel.append(cleanpoints)
-                         data_fuelpass.append(cleanpass)
-                     iter = iter +1
-                     if iter == Fpoints:
-                         break
-        
-         if matchx is not None:
-             iterx = 0
-             for line in f1:
-                 matchx2 = data_pattern.search(line)
-                 if matchx2 is not None:
-                     savex = matchx2.group(0)
-                     cleanx = savex[24:]
-                     Xdata.append(cleanx)
-                     iterx = iterx +1
-                     if iterx == Xpoints:
-                         break
-         if matchyTop is not None:
-             itery = 0
-             for line in f1:
-                 matchy2 = data_pattern.search(line)
-                 if matchy2 is not None:
-                     savey = matchy2.group(0)
-                     cleany = savey[24:]
-                     Ydata.append(cleany)
-                     itery = itery +1
-                     if itery == Ypoints:
-                         break
-         
-         if matchz is not None:
-             iterz = 0
-             for line in f1:
-                 matchz2 = data_pattern.search(line)
-                 if matchz2 is not None:
-                     savez = matchz2.group(0)
-                     cleanz = savez[23:]
-                     Zdata.append(cleanz)
-                     iterz = iterz +1
-                     if iterz == Zpoints:
-                         break
-    if __name__ == '__main__':
-        with open(name+'.txt', 'r') as f1:
-         with open('STAR_Heat', 'wb') as f2:
-             SERPENTExtract(f1,f2)
     ##########################################################
     #### Print Data to CSV in format recognized by STAR-CCM+ #
     ##########################################################
-    Np = list(range(points))
-    nx = list(range(Xpoints))
-    ny = list(range(Ypoints))
-    nz = list(range(Zpoints))
-    data_pass = [float(i) for i in data_pass]
+    Serpent_to_Star_csv(DETSerpent2STop,csv_outfile,csv_Title)
 
-    Xdata = [float(i) for i in Xdata]
-    Ydata = [float(i) for i in Ydata]
-
-    Zdata = [float(i) for i in Zdata]
-    # saves fuel data
-    data_fuelpass = [float(i) for i in data_fuelpass]
-    # Converts Data to be written to CSV
-    for point in Np:
-     # Sets first and last set of Volumetric Heating to Zero, since this will define the Volumetric Heating Test Section
-     if point <= Ypoints:
-         data_pass[point] = data_pass[point]*0
-
-     elif point >= points-Ypoints:
-         data_pass[point] = data_pass[point]*0
-
-     else:
-     # Converts Mean Values of J/cm^3 to J/m^3-s to pass to STAR-CCM+ 
-         data_pass[point] = (data_pass[point]/cm3_to_m3)/timestep      
-
-    # Converts cm to m
-    for xpoint in nx:
-        # Note: Due to STAR-CCM+ being a 2-D simulation, X-Values (which would be Z Values) are set to zero
-        Xdata[xpoint] = position_Serpent_to_STAR(Xdata[xpoint],reference_conversion_x,unit_conversion_x)
-    for ypoint in ny:
-        # Y-Values stay the same in both codes (subtract SERPENT Distance from Origin to get STAR-CCM+ relative distance)
-        Ydata[ypoint] = position_Serpent_to_STAR(Ydata[ypoint],reference_conversion_y,unit_conversion_y)
-    for zpoint in nz:
-        # Note: Due to orientation of STAR-CCM+ simulation Z Values are X Values in STAR
-        Zdata[zpoint] = position_Serpent_to_STAR(Zdata[zpoint],reference_conversion_z,unit_conversion_z)
-
-    # Organizes Data to be passed to csv
-    # Passes Data
-    with open(r'STAR_HeatTop.csv', 'wb') as f2:
-        # Sets up Title Headers for STAR-CCM+
-        Title = ['X(m)', 'Y(m)', 'Z(m)', 'VolumetricHeat(W/m^3)']
-        csv_writer = csv.writer(f2)
-        csv_writer.writerow(Title)
-    # Iterates through the number of points given in the SERPENT Output
-        for point in Np:
-         # Finds the integers used by SERPENT to show Z,Y,X Locations
-         temp = re.findall(r'\d+', data[point])
-         res = list(map(int,temp))
-         # Replaces X integer with actual location from SERPENT Output
-         for xpoint in nx:
-             if res[2] == xpoint:
-                 res[2] = Xdata[xpoint]
-         # Replaces Y integer with actual location from SERPENT Output
-         for ypoint in ny:
-             if res[1] == ypoint:
-                 res[1] = Ydata[ypoint]
-         # Replaces Z Integer with actual location from SERPENT Output
-         for zpoint in nz:
-             if res[0] == zpoint:
-                 res[0] = Zdata[zpoint]
-         # Adds Mean Value for that location
-         res.append(data_pass[point])
-         # Writes to csv
-         csv_writer.writerow(res)
     
     if curtime == 0:
         ##############################################
@@ -651,7 +446,6 @@ while simulating == 1:
 
     if curtime > 0:
         os.remove('SerpentDone.txt')
-    os.remove(textfile)
     # Increment time step
     curtime += 1
 
