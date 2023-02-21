@@ -42,19 +42,46 @@ reference_conversion_z = 226.7903 # difference in reference frames in cm
 unit_conversion_z = -1/100        # multiplication factor for unit conversion
 
 def position_Serpent_to_STAR(data,reference_conversion,unit_conversion):
+    """ Converts position values from Serpent reference frame to STAR reference frame.
+
+    Parameters
+    ----------
+    data : float,int,array
+        data to be converted
+    reference_conversion : float,int
+        translation from Serpent reference to STAR reference
+    unit_conversion : float,int
+        unit conversion factor from Serpent reference to STAR reference
+
+    Returns
+    -------
+    data : float,int,array
+        converted data
+    """
     data = (data-reference_conversion)*unit_conversion
     return data
 
 
 # file name and header for STAR csv file
-csv_outfile = r'STAR_HeatTop.csv'
-csv_Title = ['X(m)', 'Y(m)', 'Z(m)', 'VolumetricHeat(W/m^3)']
+Heat_csv_outfile = r'STAR_HeatTop.csv'
+Heat_csv_Title = ['X(m)', 'Y(m)', 'Z(m)', 'VolumetricHeat(W/m^3)']
 # function to write out Serpent heating data to STAR csv
-def Serpent_to_Star_csv(detector,outfile,Title):
+def SerpentHeat_to_Star_csv(detector,outfile,title):
+    """ Writes Serpent heating detector data out to csv file for STAR to read.
+
+    Parameters
+    ----------
+    detector : serpentTools Detector object
+
+    outfile : str
+        file to open and write to
+    title : str or list of str
+        header to write on first row of csv file
+    """
     row = np.zeros(4)
     with open(outfile, 'w') as f:
         csv_writer = csv.writer(f)
-        csv_writer.writerow(Title)
+        csv_writer.writerow(title)
         for zpoint in range(detector.tallies.shape[0]):
             for ypoint in range(detector.tallies.shape[1]):
                 row[0] = position_Serpent_to_STAR(detector.grids['Z'][zpoint,2],reference_conversion_z,unit_conversion_z)
@@ -288,7 +315,7 @@ while simulating == 1:
     ##########################################################
     #### Print Data to CSV in format recognized by STAR-CCM+ #
     ##########################################################
-    Serpent_to_Star_csv(DETSerpent2STop,csv_outfile,csv_Title)
+    SerpentHeat_to_Star_csv(DETSerpent2STop,Heat_csv_outfile,Heat_csv_Title)
 
     
     if curtime == 0:

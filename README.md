@@ -11,9 +11,22 @@ This project utilizes the same software, structure, and coupling method as **CON
 
 ---
 # Functions
+The following section describes the functions defined and used in **CONSTELATION**.
+
+## `position_Serpent_to_STAR(data,reference_conversion,unit_conversion)`
+This function converts position values from the Serpent 2 reference frame to the STAR-CCM+ reference frame. It takes 3 inputs: `data`, `reference_conversion`, and `unit_conversion` and is defined as:
+```python
+data = (data-reference_conversion)*unit_conversion
+return data
+```
+The `reference_conversion` value is the difference between the two model's reference frames. Normally, the STAR-CCM+ model is centered on the HENRI cartridge on the $x$- and $y$- axes. In the Serpent model, the HENRI cartridge has some translation from the origin as the origin is at the center of the reactor. The `unit_conversion` value addresses any discrepancy between the units of the two codes. For example, the STAR-CCM+ model may be in meters, but Serpent uses centimeters. For 2-D CFD simulations, the `unit_conversion` value can be set to zero for the dimension that does not exist in the STAR-CCM+ model.
 
 
-## Detectors
+## `SerpentHeat_to_Star_csv(detector,outfile,title)`
+This function writes out Serpent 2 detector position and tally values to a *`.csv`* file for STAR-CCM+ to read, specifically for the helium-3 heating detector. The 3 inputs for this function are the `serpentTools` `Detector` ([serpentTools](https://serpent-tools.readthedocs.io/en/master/index.html) and [serpentTools DetectorReader](https://serpent-tools.readthedocs.io/en/master/examples/Detector.html)) object of interest, the *`.csv`* file to write to, and the header row of the output file.
+The function includes the reference frame and unit conversion and calls the `position_Serpent_to_STAR` function as needed for the position values.
+
+
 There are 12 columns in the Serpent 2 detector (Serpent manual):
 
 1. Value index
@@ -29,4 +42,6 @@ There are 12 columns in the Serpent 2 detector (Serpent manual):
 11. Mean value
 12. Relative statistical error
 
-The detectors defined for passing the Serpent 2 data to STAR-CCM+ are only binned with respect to the $x$, $y$, and $z$ meshes.
+The `serpentTools` package allows for any part of the detector to be accessed. We are specifically interested with the `.tallies` portion, which is the mean value reported by Serpent. There are also $x$, $y$, and $z$ grid meshes that are printed in the detector file that the `DetectorReader` reads. These are accessed using `.grids['X']`, `.grids['Y']`, and `.grids['Z']`.
+
+The detectors defined for passing the Serpent 2 data to STAR-CCM+ are only binned with respect to the $x$, $y$, and $z$ meshes. The `serpentTools.Detector` objects are reshaped such that the resultant array has an axis for each bin. Because the $x$ direction only has one bin, the shape of the `detector` array is ($z$-bins,$y$-bins).
