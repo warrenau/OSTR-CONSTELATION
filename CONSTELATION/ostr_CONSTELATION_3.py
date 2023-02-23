@@ -17,6 +17,7 @@ import numpy as np
 import re
 from shutil import copyfile
 import serpentTools
+#import CONSTELATION_functions as con
 
 
 # Time steps need to match up between STAR-CCM+ and Serpent 2 so the information passed between them is happening at the same time. This does not define the time steps for the respective codes.
@@ -89,6 +90,81 @@ def SerpentHeat_to_Star_csv(detector,outfile,title):
                 row[2] = position_Serpent_to_STAR(detector.grids['X'][0,2],reference_conversion_x,unit_conversion_x)
                 row[3] = detector.tallies[zpoint,ypoint]*cm3_to_m3/timestep     # required to match units between the two sims. from J/cm^3 to W/m^3
                 csv_writer.writerow(row)
+
+# classes for holding info about ifc and csv files
+
+class Serpent_ifc(object):
+    """ interface file object
+
+    Attributes
+    ----------
+    name : name of ifc file 'he3.ifc'
+    header : header of ifc file (TYPE MAT OUT) '2 he3 0\n'
+    type : mesh type of ifc file '1\n'
+    mesh : mesh of ifc file (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
+    data : density and temperature data for ifc file
+    """
+    def __init__(self,name,header,type,mesh):
+        self.name = name
+        self.header = header
+        self.type = type
+        self.mesh = mesh
+
+class STAR_csv(object):
+    """ STAR-CCM+ csv file object
+
+    Attributes
+    ----------
+    name : name of csv file r'./ExtractedData/He3Data_table.csv'
+    header : header of csv file ['Position', 'Density', 'Temperature']
+    data : density and temperature data from csv file
+    """
+    def __init__(self,name,header):
+        self.name = name
+        self.header = header
+
+# functions for writing data to ifc files
+# function to fix any temps below 300K for helium-3 cross sections
+def min_temp_fix(array):
+    for point in range(len(array)):
+        if array[point,2] < 300.0:
+            array[point,2] = 300.0
+    return array
+
+# function to read in csv and convert from pandas to numpy array (should maybe just use numpy array to read in the first place?)
+def read_to_numpy(STAR_csv):
+    file_in = STAR_csv.name
+    columns = STAR_csv.header
+    data = pd.read_csv(file_in,usecols=columns)
+    data = data.to_numpy()
+    data = data[data[:,0].argsort()]
+    return data
+
+# function to write data from csv file to ifc file
+# writes only the density and temperature data, not the position values
+# the Serpent interface does not use the position values, since the positions are defined in the Serpent model
+def csv_to_ifc(STAR_csv,Serpent_ifc):
+    f = open(Serpent_ifc.name,'w')
+    f.write(Serpent_ifc.header)
+    f.write(Serpent_ifc.type)
+    f.write(Serpent_ifc.mesh)
+
+    file_in = STAR_csv.name
+
+    time_counter = 0
+    while not os.path.exists(file_in):
+        time.sleep(1)
+        time_counter += 1
+        if time_counter > time_to_wait: break
+    if os.path.isfile(file_in):
+        data = read_to_numpy(STAR_csv)
+        data = min_temp_fix(data)
+        np.savetxt(f, data[:,[1,2]], fmt="%1.6f")
+    else:
+        raise ValueError("%s has not been created or could not be read" % file_in)
+    
+    f.close()
+
 
 #######################################################
 # Create the Serpent input-file for this run          #
@@ -235,7 +311,7 @@ while simulating == 1:
     sleeping = 1
     while sleeping == 1:
         # Sleep for two seconds
-        time.sleep(5)
+        time.sleep(2)
         # Open file to check if we got a signal
         fin = open('com.out', 'r')
         # Read line
