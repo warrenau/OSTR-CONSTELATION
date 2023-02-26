@@ -374,13 +374,8 @@ while simulating == 1:
     
     # check to make sure the detector file exists
     outputfile = r'coupledTRIGA_det'+str(curtime) + '.m'
-    time_counter = 0
-    while not os.path.exists(outputfile):
-        time.sleep(1)
-        time_counter += 1
-        if time_counter > SERPENTWait:
-            raise ValueError("%s has not been created or could not be read" % Serpname)
-            break
+    wait_for_file(outputfile,SERPENTWait)
+
     # read in detector file using serpentTools reader
     Serpent_data = serpentTools.read(outputfile)
     # use the serpentTools detector objects for the specified detectors
@@ -409,11 +404,7 @@ while simulating == 1:
     # check to see if STAR is done executing
     STARTop = r'./STARTopDone.txt'
     time_to_wait = 1000000
-    time_counter = 0
-    while not os.path.exists(STARTop):
-        time.sleep(1)
-        time_counter += 1
-        if time_counter > time_to_wait:break
+    wait_for_file(STARTop,time_to_wait)
 
     if curtime > 0:
         # Write SERPENTDone.txt file indicating that the current loop has been completed and data extracted
@@ -518,6 +509,9 @@ while simulating == 1:
     if curtime >= 2:
         copyfile('coupledTreat_res.m','Archive/coupledTreat_res'+str(curtime)+'.m')
     # Delete Files that are not needed between iterations
+    ##
+    # I want to remove the wait timer here and implement a way for the code to check if the files have been read and can be deleted. just using a wait time to hope the files have been read is not very robust and will cause issues in the future. not sure the best way, maybe adding lines to the files saying theyve been read?
+    ##
     time.sleep(60)
     os.remove(STARTop)
 
@@ -535,7 +529,8 @@ while simulating == 1:
     ####################################
     if (simulating == 0):
            break
-
+    
+    # what is this block for? it seems redundant. this signal was already written just before archiving the files. seems weird to write it again.
     time.sleep(30)
     file_out = open('com.in','w')
     file_out.write(str(signal.SIGUSR2))
