@@ -1,4 +1,4 @@
-############################################################
+#############################################################
 #                                                           #
 #          STAR and Serpent Coupling Script v 0.6           #
 #                   CONSTELATION                            #
@@ -126,6 +126,17 @@ class STAR_csv(object):
 # functions for writing data to ifc files
 # function to fix any temps below 300K for helium-3 cross sections
 def min_temp_fix(array):
+    """ Fixes any temperatures below 300K to be 300K for Serpent 2 cross section data
+
+    Parameters
+    ----------
+    array : numpy array [position, density, temperature]
+
+    Returns
+    -------
+    array : numpy array [position, density, temperature] with fixed values
+    
+    """
     for point in range(len(array)):
         if array[point,2] < 300.0:
             array[point,2] = 300.0
@@ -133,6 +144,17 @@ def min_temp_fix(array):
 
 # function to read in csv and convert from pandas to numpy array (should maybe just use numpy array to read in the first place?)
 def read_to_numpy(STAR_csv):
+    """ Reads in data from STAR-CCM+ csv file, converts the data to a numpy array, and sorts the data by position.
+
+    Parameters
+    ----------
+    STAR_csv : STAR_csv object
+
+    Returns
+    -------
+    data : numpy array
+    
+    """
     file_in = STAR_csv.name
     columns = STAR_csv.header
     data = pd.read_csv(file_in,usecols=columns)
@@ -144,6 +166,15 @@ def read_to_numpy(STAR_csv):
 # writes only the density and temperature data, not the position values
 # the Serpent interface does not use the position values, since the positions are defined in the Serpent model
 def csv_to_ifc(STAR_csv,Serpent_ifc):
+    """ Reads in density and temperature data from STAR-CCM+ csv file and writes it to a Serpent 2 ifc file.
+
+    Parameters
+    ----------
+    STAR_csv : STAR_csv object
+        csv file to read from
+    Serpent_ifc : Serpent_ifc object
+        ifc file to write to
+    """
     f = open(Serpent_ifc.name,'w')
     f.write(Serpent_ifc.header)
     f.write(Serpent_ifc.type)
@@ -211,53 +242,23 @@ file_out.close()
 # Write the initial He3 interface file for 1st Star Run                      #
 # (He3 temperature and density for top two HENRI's will be updated)          #
 ##############################################
-# open interface file
-file_out = open('HE3.ifc', 'w')
-
-# Write the header line (TYPE MAT OUT)
-file_out.write('2  helium3 0\n')
-
-# Write the mesh type
-file_out.write('1\n')
-
-# Write the mesh data (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
-# using z values between bottom of top grid plate and top of bottom grid plate
-file_out.write(helium_mesh)
-
 # Write the Mesh Data
 STAR_Points = 501
-# Check to see if STAR-CCM_ .csv file has been created and wait for a predetermined amount of time if it hasn't
+
+# define the initial Serpent_ifc object
+Serpent_ifc_top = Serpent_ifc('HE3.ifc','2 helium3 0\n','1\n',helium_mesh)
+
+# define the initial STAR_csv object with file name and header
+filename = r'./ExtractedData/He3Data_table.csv'
+columns = ['Position in Cartesian 1[X] (cm)', 'Density(g/cm^3) (kg/m^3)', 'Temperature (K)']
+STAR_csv_top = STAR_csv(filename,columns)
+
+# reset wait timers for waiting for the csv file
 time_to_wait = 10
 time_counter = 0
-filename = r'./ExtractedData/He3Data_table.csv'
-while not os.path.exists(filename):
-    time.sleep(1)
-    time_counter += 1
-    if time_counter > time_to_wait: break
-if os.path.isfile(filename):
-    # Take the data from STAR-CCM+ .csv file and write to ifc
-    columns = ['Position in Cartesian 1[X] (cm)', 'Density(g/cm^3) (kg/m^3)', 'Temperature (K)']
-    df = pd.read_csv(filename, usecols=columns)
-    # Position = df['Position in Cartesian 1[X] (cm)']
-    # Density =  df['Density(g/cm^3) (kg/m^3)']
-    # Temp = df['Temperature (K)']
-    
-    # Sorts data from STAR-CCM+ in ascending order by position
-    df_convert = df.to_numpy()
-    numpy_array = df_convert[df_convert[:, 0].argsort()]
-    
-    # Cross Section Data for He-3 in SERPENT2 only exists for 300 K or above, this will only happen early on in the transient and temp
-    # should never fall that far below 300K so setting this arbitrary constraint should have minimal change in results
-    for i in range(STAR_Points):
-        if numpy_array[i, 2] < 300.0:
-            numpy_array[i, 2] = 300.0
-    denstemp = numpy_array[:, [1, 2]]
-    np.savetxt(file_out, denstemp, fmt="%1.6f")
-else:
-    raise ValueError("%s has not been created or could not be read" % filename)
 
-# Close interface file
-file_out.close()
+# write the data from the csv file to the ifc file
+csv_to_ifc(STAR_csv_top,Serpent_ifc_top)
 
 
 ##############################################
@@ -393,6 +394,9 @@ while simulating == 1:
     ##########################################################
     SerpentHeat_to_Star_csv(DETSerpent2STop,Heat_csv_outfile,Heat_csv_Title)
 
+    ##############################################
+    # Check on STAR-CCM+ Simulation              #
+    ##############################################
     
     if curtime == 0:
         ##############################################
@@ -421,49 +425,19 @@ while simulating == 1:
     ###########################
     # Update Top interface        #
     ###########################
+    # begin by removing old ifc file to avoid any issues with writing to an exisiting file
     os.remove('HE3TOP.ifc')
-    file_out = open('HE3TOP.ifc', 'w')
     
-    file_out.write('2  He3Top 0\n')
-    
-    # Write the mesh type
-    file_out.write('1\n')
-
-    # Write the mesh data (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
-    file_out.write(helium_mesh)
-    
-    # Check to see if STAR-CCM_ .csv file has been created and wait for a predetermined amount of time if it hasn't
+    # reset wait timer for csv file
     time_to_wait = 1000000
     time_counter = 0
+
+    # update csv file name
     filename = r'./ExtractedData/He3Data_table_'+str(STAR_STEP)+'.csv'
-    while not os.path.exists(filename):
-        time.sleep(1)
-        time_counter += 1
-        if time_counter > time_to_wait:break
-    if os.path.isfile(filename):
-        # Take the data from STAR-CCM+ .csv file and write to ifc
-        columns = ['Position in Cartesian 1[X] (cm)', 'Density(g/cm^3) (kg/m^3)', 'Temperature (K)']
-        df = pd.read_csv(filename, usecols=columns)
-        # Position = df['Position in Cartesian 1[X] (cm)']
-        # Density =  df['Density(g/cm^3) (kg/m^3)']
-        # Temp = df['Temperature (K)']
-        
-        # Sorts data from STAR-CCM+ in ascending order by position
-        df_convert = df.to_numpy()
-        numpy_array = df_convert[df_convert[:, 0].argsort()]
-        
-        # Cross Section Data for He-3 in SERPENT2 only exists for 300 K or above, this will only happen early on in the transient and temp
-        # should never fall that far below 300K so setting this arbitrary constraint should have minimal change in results
-        for i in range(STAR_Points):
-            if numpy_array[i,2] < 300.0:
-                numpy_array[i,2] = 300.0
-        denstemp = numpy_array[:,[1,2]]
-        np.savetxt(file_out,denstemp, fmt = "%1.6f")
-    else:
-        raise ValueError("%s has not been created or could not be read" % filename)
-    # Close interface file 
+    STAR_csv_top.name = filename
     
-    file_out.close()
+    # write from csv to ifc
+    csv_to_ifc(STAR_csv_top,Serpent_ifc_top)
     
     # Update STAR_STEP by number of steps that STAR takes before updating data
     STAR_STEP += step_length
