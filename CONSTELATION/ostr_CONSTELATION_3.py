@@ -102,11 +102,12 @@ class Serpent_ifc(object):
     mesh : mesh of ifc file (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
     data : density and temperature data for ifc file
     """
-    def __init__(self,name,header,type,mesh):
+    def __init__(self,name,header,mesh_type,mesh):
         self.name = name
         self.header = header
-        self.type = type
+        self.mesh_type = mesh_type
         self.mesh = mesh
+        self.data = np.array([])
 
 class STAR_csv(object):
     """ STAR-CCM+ csv file object
@@ -120,6 +121,7 @@ class STAR_csv(object):
     def __init__(self,name,header):
         self.name = name
         self.header = header
+        self.data = np.array([])
 
 # functions for writing data to ifc files
 # function to fix any temps below 300K for helium-3 cross sections
@@ -175,23 +177,13 @@ def csv_to_ifc(STAR_csv,Serpent_ifc):
     """
     f = open(Serpent_ifc.name,'w')
     f.write(Serpent_ifc.header)
-    f.write(Serpent_ifc.type)
+    f.write(Serpent_ifc.mesh_type)
     f.write(Serpent_ifc.mesh)
 
-    file_in = STAR_csv.name
+    data = read_to_numpy(STAR_csv)
+    data = min_temp_fix(data)
+    np.savetxt(f, data[:,[1,2]], fmt="%1.6f")
 
-    time_counter = 0
-    while not os.path.exists(file_in):
-        time.sleep(1)
-        time_counter += 1
-        if time_counter > time_to_wait: break
-    if os.path.isfile(file_in):
-        data = read_to_numpy(STAR_csv)
-        data = min_temp_fix(data)
-        np.savetxt(f, data[:,[1,2]], fmt="%1.6f")
-    else:
-        raise ValueError("%s has not been created or could not be read" % file_in)
-    
     f.close()
 
 
@@ -256,6 +248,13 @@ time_to_wait = 10
 time_counter = 0
 
 # write the data from the csv file to the ifc file
+while not os.path.exists(filename):
+    time.sleep(1)
+    time_counter += 1
+    if time_counter > time_to_wait:
+        raise ValueError("%s has not been created or could not be read" % filename)
+        break
+        
 csv_to_ifc(STAR_csv_top,Serpent_ifc_top)
 
 
@@ -378,9 +377,9 @@ while simulating == 1:
     while not os.path.exists(outputfile):
         time.sleep(1)
         time_counter += 1
-    if time_counter > SERPENTWait:
-        raise ValueError("%s has not been created or could not be read" % Serpname)
-        break
+        if time_counter > SERPENTWait:
+            raise ValueError("%s has not been created or could not be read" % Serpname)
+            break
     # read in detector file using serpentTools reader
     Serpent_data = serpentTools.read(outputfile)
     # use the serpentTools detector objects for the specified detectors
@@ -436,6 +435,13 @@ while simulating == 1:
     STAR_csv_top.name = filename
     
     # write from csv to ifc
+    while not os.path.exists(filename):
+        time.sleep(1)
+        time_counter += 1
+        if time_counter > time_to_wait:
+            raise ValueError("%s has not been created or could not be read" % filename)
+            break
+        
     csv_to_ifc(STAR_csv_top,Serpent_ifc_top)
     
     # Update STAR_STEP by number of steps that STAR takes before updating data

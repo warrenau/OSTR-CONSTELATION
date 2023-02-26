@@ -9,6 +9,27 @@ This project utilizes the same software, structure, and coupling method as **CON
 - STAR-CCM+ (used version 2020.2.1 on INL HPC)
 - Serpent 2 (used version 2.1.31 on INL HPC)
 
+
+---
+# Classes
+The following section describes the classes defined and used in **CONSTELATION**.
+
+## `Serpent_ifc(object)`
+This class is used to store information about the interface files used by Serpent 2. It is initialized with 4 attributes: 
+```python
+Top_ifc = Serpent_ifc(name,header,mesh_type,mesh)
+```
+These 4 attributes represent the first 4 lines written into the *`.ifc`* files that tell Serpent 2 what the file is. An additional attribute that is not required upon initialization is the `data` attribute, which is a place to store data associated with the *`.ifc`* file if necessary. The data does not need to be stored in the object when used in the `csv_to_ifc` function as the data is written out to the file.
+
+## `STAR_csv(object)`
+The `STAR_csv` class is similar to the `Serpent_ifc` class and contains information relevant to the STAR-CCM+ *`.csv`* files used to pass information to and from STAR-CCM+. It is initialized with 2 attributes:
+```python
+Top_csv = STAR_csv(name,header)
+```
+The `name` attribute is the file name used in the `python` script and the `header` attribute is the first row of the *`.csv`* file. This class also has an optional `data` attribute that can be defined later.
+
+
+
 ---
 # Functions
 The following section describes the functions defined and used in **CONSTELATION**.
@@ -45,3 +66,13 @@ There are 12 columns in the Serpent 2 detector (Serpent manual):
 The `serpentTools` package allows for any part of the detector to be accessed. We are specifically interested with the `.tallies` portion, which is the mean value reported by Serpent. There are also $x$, $y$, and $z$ grid meshes that are printed in the detector file that the `DetectorReader` reads. These are accessed using `.grids['X']`, `.grids['Y']`, and `.grids['Z']`.
 
 The detectors defined for passing the Serpent 2 data to STAR-CCM+ are only binned with respect to the $x$, $y$, and $z$ meshes. The `serpentTools.Detector` objects are reshaped such that the resultant array has an axis for each bin. Because the $x$ direction only has one bin, the shape of the `detector` array is ($z$-bins,$y$-bins).
+
+
+## `min_temp_fix(array)`
+The cross section values used for helium-3 that have the KERMA data do not have data for helium-3 below 300K. This function fixes any temperature that is below 300K to be 300K. The input is an array of values in the form `[position,density,temperature]`. The function checks every value in the third column and makes sure it is at or above 300.0.
+
+## `read_to_numpy(STAR_csv)`
+This function reads data from a *`.csv`* file written by STAR-CCM+ and converts it to a numpy array. It uses a `pandas` function to read only the specified columns, then converts the data frame to a numpy array. The required input is a `STAR_csv` object with the file name in the `name` attribute and the desired columns in the `header` attribute.
+
+## `csv_to_ifc(STAR_csv,Serpent_ifc)`
+This function handles writing the data from a STAR-CCM+ *`.csv`* file to a Serpent 2 *`.ifc`* file. It calls both `min_temp_fix` and `read_to_numpy` within it. The inputs are the `STAR_csv` object for the STAR-CCM+ generated file being read and the `Serpent_ifc` object for the file being written to. While the incoming data has position, density, and temperature, the *`.ifc`* requires only the density and temperature data, so the function truncates the position values off when it writes to the *`.ifc`* file.
