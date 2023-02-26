@@ -34,6 +34,10 @@ The `name` attribute is the file name used in the `python` script and the `heade
 # Functions
 The following section describes the functions defined and used in **CONSTELATION**.
 
+## `wait_for_file(file,wait)`
+This function takes in the file path and wait time in seconds and waits until the file exists or the wait time is exceeded. It is used a few times throughout **CONSTELATION** to make sure a file is there to be read or to wait for a file to be created during the set up. If the wait time is exceeded, there is an error that is raised to stop the program.
+
+
 ## `position_Serpent_to_STAR(data,reference_conversion,unit_conversion)`
 This function converts position values from the Serpent 2 reference frame to the STAR-CCM+ reference frame. It takes 3 inputs: `data`, `reference_conversion`, and `unit_conversion` and is defined as:
 ```python
