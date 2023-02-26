@@ -35,12 +35,8 @@ helium_mesh = '1 -100 100 1 0 100 500 -33.02 30.78\n'
 fuel_mesh = '1 -500 500 1 -500 500 10 -33.02 30.78\n'
 
 # convert position data from Serpent to STAR, both units and reference frame
-reference_conversion_x = 20.405   # difference in reference frames in cm
-unit_conversion_x = 0             # multiplication factor for unit conversion
-reference_conversion_y = 40.605   # difference in reference frames in cm
-unit_conversion_y = -1/100        # multiplication factor for unit conversion
-reference_conversion_z = 226.7903 # difference in reference frames in cm
-unit_conversion_z = -1/100        # multiplication factor for unit conversion
+reference_conversion = [20.405, 40.605, 226.7903]   # difference in reference frames in cm
+unit_conversion = [0, -1/100, -1/100]             # multiplication factor for unit conversion
 
 def position_Serpent_to_STAR(data,reference_conversion,unit_conversion):
     """ Converts position values from Serpent reference frame to STAR reference frame.
@@ -66,8 +62,9 @@ def position_Serpent_to_STAR(data,reference_conversion,unit_conversion):
 # file name and header for STAR csv file
 Heat_csv_outfile = r'STAR_HeatTop.csv'
 Heat_csv_Title = ['X(m)', 'Y(m)', 'Z(m)', 'VolumetricHeat(W/m^3)']
+
 # function to write out Serpent heating data to STAR csv
-def SerpentHeat_to_Star_csv(detector,outfile,title):
+def SerpentHeat_to_Star_csv(detector,STAR_csv,reference_conversion,unit_conversion):
     """ Writes Serpent heating detector data out to csv file for STAR to read.
 
     Parameters
@@ -79,20 +76,21 @@ def SerpentHeat_to_Star_csv(detector,outfile,title):
     title : str or list of str
         header to write on first row of csv file
     """
+    outfile = STAR_csv.name
+    title = STAR_csv.header
     row = np.zeros(4)
     with open(outfile, 'w') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(title)
         for zpoint in range(detector.tallies.shape[0]):
             for ypoint in range(detector.tallies.shape[1]):
-                row[0] = position_Serpent_to_STAR(detector.grids['Z'][zpoint,2],reference_conversion_z,unit_conversion_z)
-                row[1] = position_Serpent_to_STAR(detector.grids['Y'][ypoint,2],reference_conversion_y,unit_conversion_y)
-                row[2] = position_Serpent_to_STAR(detector.grids['X'][0,2],reference_conversion_x,unit_conversion_x)
+                row[0] = position_Serpent_to_STAR(detector.grids['Z'][zpoint,2],reference_conversion[2],unit_conversion[2])
+                row[1] = position_Serpent_to_STAR(detector.grids['Y'][ypoint,2],reference_conversion[1],unit_conversion[1])
+                row[2] = position_Serpent_to_STAR(detector.grids['X'][0,2],reference_conversion[0],unit_conversion[0])
                 row[3] = detector.tallies[zpoint,ypoint]*cm3_to_m3/timestep     # required to match units between the two sims. from J/cm^3 to W/m^3
                 csv_writer.writerow(row)
 
 # classes for holding info about ifc and csv files
-
 class Serpent_ifc(object):
     """ interface file object
 
@@ -299,7 +297,7 @@ while not os.path.exists(Serpname):
     if time_counter > SERPENTWait:
         raise ValueError("%s has not been created or could not be read" % Serpname)
         break
-#######################
+########################
 # Loop over time steps #
 ########################
 
@@ -370,8 +368,8 @@ while simulating == 1:
     # loop
     if simulating == 0:
         break
-    ########################
-    # Import SERPENT2 Data ##
+    #########################
+    # Import SERPENT2 Data  #
     #########################
     
     # check to make sure the detector file exists
@@ -392,7 +390,8 @@ while simulating == 1:
     ##########################################################
     #### Print Data to CSV in format recognized by STAR-CCM+ #
     ##########################################################
-    SerpentHeat_to_Star_csv(DETSerpent2STop,Heat_csv_outfile,Heat_csv_Title)
+    Heat_csv = STAR_csv(Heat_csv_outfile,Heat_csv_Title)
+    SerpentHeat_to_Star_csv(DETSerpent2STop,Heat_csv,reference_conversion,unit_conversion)
 
     ##############################################
     # Check on STAR-CCM+ Simulation              #
@@ -423,7 +422,7 @@ while simulating == 1:
         file_out.close
 
     ###########################
-    # Update Top interface        #
+    # Update Top interface    #
     ###########################
     # begin by removing old ifc file to avoid any issues with writing to an exisiting file
     os.remove('HE3TOP.ifc')
@@ -447,7 +446,6 @@ while simulating == 1:
     ###########################
 
     # Fuel specific heat capacity
-
     cp = 998  # J/(kg*K)
 
     # Calculate EOI temperatures at (nz) axial nodes
@@ -464,7 +462,6 @@ while simulating == 1:
         #   4 HENRI Assemblies (Fuel Assembly Area - HENRI Area) (73.53 cm^2)
         #   Density of Fuel assumed to be 1.72 g/cm^3 (mostly Graphite)
         #   z-slice (10 slices / total length of reactor (121 cm))
-
         m = ((93.16*314)+(65.65*20)+(75.53*4)) * 12.1 * 1.72 * 1e-3
 
         # Calculate initial heat in this axial node
