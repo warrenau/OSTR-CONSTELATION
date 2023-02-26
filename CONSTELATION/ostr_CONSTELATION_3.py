@@ -187,6 +187,15 @@ def csv_to_ifc(STAR_csv,Serpent_ifc):
     f.close()
 
 
+# function to handle waiting for file creation which happens a lot during the execution
+def wait_for_file(file,wait):
+    time_count = 0
+    while not os.path.isfile(file):
+        time.sleep(1)
+        time_count += 1
+        if time_count > wait:
+            raise ValueError("%s has not been created or could not be read" % file)
+
 #######################################################
 # Create the Serpent input-file for this run          #
 # (process id or communication file must be appended) #
@@ -245,16 +254,12 @@ STAR_csv_top = STAR_csv(filename,columns)
 
 # reset wait timers for waiting for the csv file
 time_to_wait = 10
-time_counter = 0
 
-# write the data from the csv file to the ifc file
-while not os.path.exists(filename):
-    time.sleep(1)
-    time_counter += 1
-    if time_counter > time_to_wait:
-        raise ValueError("%s has not been created or could not be read" % filename)
-        break
-        
+
+# make sure file exists before trying to read it
+wait_for_file(filename,time_to_wait)
+
+# write the data from the csv file to the ifc file        
 csv_to_ifc(STAR_csv_top,Serpent_ifc_top)
 
 
@@ -288,14 +293,10 @@ os.system(run_SERP)
 curtime = 0
 # Pause Simulation unitl SERPENT2 starts simulating
 SERPENTWait = 500000000 
-time_counter = 0
+
 Serpname = r'com.out'
-while not os.path.exists(Serpname):
-    time.sleep(5)
-    time_counter += 1
-    if time_counter > SERPENTWait:
-        raise ValueError("%s has not been created or could not be read" % Serpname)
-        break
+wait_for_file(Serpname,SERPENTWait)
+
 ########################
 # Loop over time steps #
 ########################
@@ -428,20 +429,16 @@ while simulating == 1:
     
     # reset wait timer for csv file
     time_to_wait = 1000000
-    time_counter = 0
+
 
     # update csv file name
     filename = r'./ExtractedData/He3Data_table_'+str(STAR_STEP)+'.csv'
     STAR_csv_top.name = filename
     
-    # write from csv to ifc
-    while not os.path.exists(filename):
-        time.sleep(1)
-        time_counter += 1
-        if time_counter > time_to_wait:
-            raise ValueError("%s has not been created or could not be read" % filename)
-            break
-        
+    # make sure file exists before trying to read it
+    wait_for_file(filename,time_to_wait)
+    
+    # write from csv to ifc    
     csv_to_ifc(STAR_csv_top,Serpent_ifc_top)
     
     # Update STAR_STEP by number of steps that STAR takes before updating data
