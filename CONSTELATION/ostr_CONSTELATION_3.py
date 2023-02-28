@@ -512,11 +512,13 @@ while simulating == 1:
     ##
     # I want to remove the wait timer here and implement a way for the code to check if the files have been read and can be deleted. just using a wait time to hope the files have been read is not very robust and will cause issues in the future. not sure the best way, maybe adding lines to the files saying theyve been read?
     ##
-    time.sleep(60)
-    os.remove(STARTop)
+    
 
+    # make sure STAR has read the SerpentDone file before deleting it
     if curtime > 0:
+        wait_for_file('ReadTop.txt',time_to_wait)
         os.remove('SerpentDone.txt')
+        os.remove(STARTop)
     # Increment time step
     curtime += 1
 
@@ -524,14 +526,11 @@ while simulating == 1:
 
     for i in range(10):
         TBOI[i] = TEOI[i]
+
+
     ####################################
      # Check if simulation has finished #
     ####################################
     if (simulating == 0):
            break
     
-    # what is this block for? it seems redundant. this signal was already written just before archiving the files. seems weird to write it again.
-    time.sleep(30)
-    file_out = open('com.in','w')
-    file_out.write(str(signal.SIGUSR2))
-    file_out.close()
