@@ -181,6 +181,18 @@ def wait_for_file(file,wait):
             raise ValueError("%s has not been created or could not be read" % file)
         
 
+# function to check if a com file has a number
+def com_check_digit(line,sig_notdigit):
+    f_digit = line.strip('-\n\r').isdigit()
+    if f_digit:
+        line_int = int(line)
+    elif not f_digit:
+        line_int = sig_notdigit
+    else:
+        print('The com.out file does not exist or cannot be read.')
+    return line_int
+        
+
 #######################################################
 #                  INPUTS                             #
 #######################################################
@@ -214,15 +226,16 @@ fuel_mesh = '1 -500 500 1 -500 500 10 -33.02 30.78\n'
 reference_conversion = [20.405, 40.605, 226.7903]   # difference in reference frames in cm
 unit_conversion = [0, -1/100, -1/100]             # multiplication factor for unit conversion
 
-# file name and header for STAR csv file
+# STAR csv file for passing heating to STAR from Serpent
 Heat_csv_outfile = 'STAR_HeatTop.csv'
 Heat_csv_Title = ['X(m)', 'Y(m)', 'Z(m)', 'VolumetricHeat(W/m^3)']
+Heat_csv = STAR_csv(Heat_csv_outfile,Heat_csv_Title)
 
 # define the initial Serpent_ifc object (name,header,mesh type, mesh)
 Serpent_ifc_top = Serpent_ifc('HE3.ifc','2 helium3 0\n','1\n',helium_mesh)
 
 # define the initial STAR_csv object with file name and header
-STARHeat_table = r'./ExtractedData/He3Data_table.csv'
+STARHeat_table = './ExtractedData/He3Data_table.csv'
 columns = ['Position in Cartesian 1[X] (cm)', 'Density(g/cm^3) (kg/m^3)', 'Temperature (K)']
 STAR_csv_top = STAR_csv(STARHeat_table,columns)
 
@@ -235,8 +248,11 @@ time_to_wait_default = 3600  # set default time to wait to an hour. most things 
 
 # done files
 Serpent_done = './SerpentDone.txt'
-STARTop_Done = r'./STARTopDone.txt'
+STARTop_Done = './STARTopDone.txt'
 STAR_read = './ReadTop.txt'
+
+# value to print if the com.out file does not contain a readable signal
+sig_notdigit = 42
 
 
 #######################################################
@@ -251,7 +267,6 @@ file_in = open(Serpent_file, 'r')
 file_out = open('coupled'+Serpent_file, 'w')
 
 # Write original input to new file
-
 for line in file_in:
     file_out.write(line)
 
@@ -346,21 +361,14 @@ while simulating == 1:
         fin.close()
 
         # check if signal can be read due to problems of empty files in previous simulations
-        f_digit = line.strip('-\n\r').isdigit()
-        sig_notdigit = 42
-        if f_digit:
-            line_int = int(line)
-        elif not f_digit:
-            line_int = sig_notdigit
-        else:
-            print('The com.out file does not exist or cannot be read.')
+        line_int = com_check_digit(line,sig_notdigit)
 
         # Check signal
         if line_int == -1:
             pass
         elif line_int == signal.SIGUSR1.value:
             # Got the signal to resume
-            print(signal.SIGUSR1)
+            print(signal.SIGUSR1.value)
             print("Resume Current Iteration")
             sleeping = 0
         elif line_int == sig_notdigit:
@@ -370,13 +378,13 @@ while simulating == 1:
             sleeping = 0
         elif line_int == signal.SIGUSR2.value:
             # Got the signal to move to next time point
-            print(signal.SIGUSR2)
+            print(signal.SIGUSR2.value)
             print('Move to Next Time Step')
             iterating = 0
             sleeping = 0
         elif line_int == signal.SIGTERM.value:
             # Got the signal to end the calculation
-            print(signal.SIGTERM)
+            print(signal.SIGTERM.value)
             print('END The Simulation')
             iterating = 0
             sleeping = 0
@@ -395,10 +403,10 @@ while simulating == 1:
     # loop
     if simulating == 0:
         break
+
     #########################
     # Import SERPENT2 Data  #
     #########################
-    
     # check to make sure the detector file exists
     detector_file = 'coupled'+Serpent_file+str(curtime) + '.m'
     wait_for_file(detector_file,time_to_wait_default)
@@ -412,7 +420,6 @@ while simulating == 1:
     ##########################################################
     #### Print Data to CSV in format recognized by STAR-CCM+ #
     ##########################################################
-    Heat_csv = STAR_csv(Heat_csv_outfile,Heat_csv_Title)
     SerpentHeat_to_Star_csv(DETSerpent_heat,Heat_csv,reference_conversion,unit_conversion)
 
     ##############################################
@@ -427,7 +434,6 @@ while simulating == 1:
         os.system(run_STAR1)
 
     # check to see if STAR is done executing
-    
     wait_for_file(STARTop_Done,time_to_wait_default)
 
     if curtime > 0:
@@ -441,7 +447,6 @@ while simulating == 1:
     ###########################
     # begin by removing old ifc file to avoid any issues with writing to an exisiting file
     os.remove(Serpent_ifc_top.name)
-
 
     # update csv file name
     filename = r'./ExtractedData/He3Data_table_'+str(STAR_STEP)+'.csv'
@@ -478,13 +483,13 @@ while simulating == 1:
     ##########################################################
     # Archive Files                                      #####
     ##########################################################
-    copyfile('HE3TOP.ifc','Archive/HE3TOP.ifc'+str(curtime))
+    copyfile(Serpent_ifc_top.name,'Archive/'+Serpent_ifc_top.name+str(curtime))
 
-    copyfile('fuel.ifc', 'Archive/fuel.ifc' + str(curtime))
-    copyfile('STAR_HeatTop.csv','Archive/Star_HeatTop'+str(curtime)+'.csv')
+    #copyfile('fuel.ifc', 'Archive/fuel.ifc' + str(curtime))
+    copyfile(Heat_csv.name,'Archive/'+Heat_csv.name+str(curtime)+'.csv')
 
     if curtime >= 2:
-        copyfile('coupledTreat_res.m','Archive/coupledTreat_res'+str(curtime)+'.m')
+        copyfile('coupled'+Serpent_file+'_res.m','Archive/coupled'+Serpent_file+'_res'+str(curtime)+'.m')
 
     ##########################################################
     # Delete Files that are not needed between iterations    #
@@ -496,7 +501,7 @@ while simulating == 1:
         os.remove(Serpent_done)
         os.remove(STARTop_Done)
         os.remove(STAR_read)
-        
+
     # Increment time step
     curtime += 1
 
