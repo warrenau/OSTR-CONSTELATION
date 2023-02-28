@@ -20,23 +20,9 @@ import serpentTools
 #import CONSTELATION_functions as con
 
 
-# Time steps need to match up between STAR-CCM+ and Serpent 2 so the information passed between them is happening at the same time. This does not define the time steps for the respective codes.
-# timestep used for simulation
-timestep = 5E-6
-# The number of time steps that STAR will simulate before checking for SERPENT completion and then export Data
-STAR_STEP = 100
-# Second variables used to stay constant in loop
-step_length = 100
-# convert cubic centimeters to cubic meters
-cm3_to_m3 = 1E-6
-
-# mesh data (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
-helium_mesh = '1 -100 100 1 0 100 500 -33.02 30.78\n'
-fuel_mesh = '1 -500 500 1 -500 500 10 -33.02 30.78\n'
-
-# convert position data from Serpent to STAR, both units and reference frame
-reference_conversion = [20.405, 40.605, 226.7903]   # difference in reference frames in cm
-unit_conversion = [0, -1/100, -1/100]             # multiplication factor for unit conversion
+#######################################################
+#                  FUNCTIONS                          #
+#######################################################
 
 def position_Serpent_to_STAR(data,reference_conversion,unit_conversion):
     """ Converts position values from Serpent reference frame to STAR reference frame.
@@ -59,9 +45,7 @@ def position_Serpent_to_STAR(data,reference_conversion,unit_conversion):
     return data
 
 
-# file name and header for STAR csv file
-Heat_csv_outfile = r'STAR_HeatTop.csv'
-Heat_csv_Title = ['X(m)', 'Y(m)', 'Z(m)', 'VolumetricHeat(W/m^3)']
+
 
 # function to write out Serpent heating data to STAR csv
 def SerpentHeat_to_Star_csv(detector,STAR_csv,reference_conversion,unit_conversion):
@@ -195,6 +179,65 @@ def wait_for_file(file,wait):
         time_count += 1
         if time_count > wait:
             raise ValueError("%s has not been created or could not be read" % file)
+        
+
+#######################################################
+#                  INPUTS                             #
+#######################################################
+# Serpent input file
+Serpent_file = 'TRIGA'
+
+# Time steps need to match up between STAR-CCM+ and Serpent 2 so the information passed between them is happening at the same time. This does not define the time steps for the respective codes.
+# timestep used for simulation
+timestep = 5E-6
+# The number of time steps that STAR will simulate before checking for SERPENT completion and then export Data
+STAR_STEP = 100
+# Second variable used to stay constant in loop
+step_length = 100
+
+# constants and conversions
+cm3_to_m3 = 1E-6    # convert cubic centimeters to cubic meters
+
+# cluster commands
+run_SERP = "qsub SERPENT_job.sh"
+run_STAR1 = "qsub STARTop_Job.sh"
+
+# com file names
+comin_name = 'com.in'
+comout_name = 'com.out'
+
+# mesh data (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
+helium_mesh = '1 -100 100 1 0 100 500 -33.02 30.78\n'
+fuel_mesh = '1 -500 500 1 -500 500 10 -33.02 30.78\n'
+
+# convert position data from Serpent to STAR, both units and reference frame
+reference_conversion = [20.405, 40.605, 226.7903]   # difference in reference frames in cm
+unit_conversion = [0, -1/100, -1/100]             # multiplication factor for unit conversion
+
+# file name and header for STAR csv file
+Heat_csv_outfile = 'STAR_HeatTop.csv'
+Heat_csv_Title = ['X(m)', 'Y(m)', 'Z(m)', 'VolumetricHeat(W/m^3)']
+
+# define the initial Serpent_ifc object (name,header,mesh type, mesh)
+Serpent_ifc_top = Serpent_ifc('HE3.ifc','2 helium3 0\n','1\n',helium_mesh)
+
+# define the initial STAR_csv object with file name and header
+STARHeat_table = r'./ExtractedData/He3Data_table.csv'
+columns = ['Position in Cartesian 1[X] (cm)', 'Density(g/cm^3) (kg/m^3)', 'Temperature (K)']
+STAR_csv_top = STAR_csv(STARHeat_table,columns)
+
+# detectors
+Serpent_det_heat = 'Serpent2STop'
+Serpent_det_fuel = 'FuelDeposition'
+
+# wait time
+time_to_wait_default = 3600  # set default time to wait to an hour. most things should not take that long.
+
+# done files
+Serpent_done = './SerpentDone.txt'
+STARTop_Done = r'./STARTopDone.txt'
+STAR_read = './ReadTop.txt'
+
 
 #######################################################
 # Create the Serpent input-file for this run          #
@@ -202,10 +245,10 @@ def wait_for_file(file,wait):
 #######################################################
 
 # Open original input for reading
-file_in = open(r'TRIGA', 'r')
+file_in = open(Serpent_file, 'r')
 
 # Open a new input file for writing
-file_out = open(r'coupledTRIGA', 'w')
+file_out = open('coupled'+Serpent_file, 'w')
 
 # Write original input to new file
 
@@ -229,7 +272,7 @@ file_out.write('set comfile com.in com.out\n')
 
 # Append interface names
 file_out.write('\n')
-file_out.write('ifc HE3.ifc\n\n')
+file_out.write('ifc '+Serpent_ifc_top.name+'\n\n')
 file_out.write('\n')
 #file_out.write('ifc fuel.ifc\n\n')  # not sure that I will use the fuel ifc, but will leave in for now
 
@@ -244,20 +287,11 @@ file_out.close()
 # Write the Mesh Data
 STAR_Points = 501
 
-# define the initial Serpent_ifc object
-Serpent_ifc_top = Serpent_ifc('HE3.ifc','2 helium3 0\n','1\n',helium_mesh)
-
-# define the initial STAR_csv object with file name and header
-filename = r'./ExtractedData/He3Data_table.csv'
-columns = ['Position in Cartesian 1[X] (cm)', 'Density(g/cm^3) (kg/m^3)', 'Temperature (K)']
-STAR_csv_top = STAR_csv(filename,columns)
-
 # reset wait timers for waiting for the csv file
 time_to_wait = 10
 
-
 # make sure file exists before trying to read it
-wait_for_file(filename,time_to_wait)
+wait_for_file(STARHeat_table,time_to_wait)
 
 # write the data from the csv file to the ifc file        
 csv_to_ifc(STAR_csv_top,Serpent_ifc_top)
@@ -273,29 +307,22 @@ csv_to_ifc(STAR_csv_top,Serpent_ifc_top)
 # Initialize the fuel temperature solution #
 ############################################
 
-TBOI = []
-TEOI = []
-
-for i in range(10):
-    TBOI.append(300.0)
-    TEOI.append(300.0)
+# removed for now, will write new function and replace as needed
 
 ################################
 # Start the Serpent simulation #
 ################################
 
 # Submit SERPENT2 submission script to server
-run_SERP = "qsub SERPENT_job.sh"
 os.system(run_SERP)
-
 
 # Reset time step
 curtime = 0
 # Pause Simulation unitl SERPENT2 starts simulating
-SERPENTWait = 500000000 
+SERPENTWait = 600000  # wait a week for it to start. the virtual desktop will only last for 2 weeks, so the simulation needs to begin within 1 week to finish. 
 
-Serpname = r'com.out'
-wait_for_file(Serpname,SERPENTWait)
+# make sure first serpent cycle has been completed. check for com file
+wait_for_file(comout_name,SERPENTWait)
 
 ########################
 # Loop over time steps #
@@ -312,7 +339,7 @@ while simulating == 1:
         # Sleep for two seconds
         time.sleep(2)
         # Open file to check if we got a signal
-        fin = open('com.out', 'r')
+        fin = open(comout_name, 'r')
         # Read line
         line = fin.readline()
         # Close file
@@ -361,7 +388,7 @@ while simulating == 1:
             # Exit
             quit()
         # Reset the signal in the file
-        file_out = open('com.out', 'w')
+        file_out = open(comout_name, 'w')
         file_out.write('-1')
         file_out.close()
     # Check if simulation has finished and break out of iterating
@@ -373,20 +400,20 @@ while simulating == 1:
     #########################
     
     # check to make sure the detector file exists
-    outputfile = r'coupledTRIGA_det'+str(curtime) + '.m'
-    wait_for_file(outputfile,SERPENTWait)
+    detector_file = 'coupled'+Serpent_file+str(curtime) + '.m'
+    wait_for_file(detector_file,time_to_wait_default)
 
     # read in detector file using serpentTools reader
-    Serpent_data = serpentTools.read(outputfile)
+    Serpent_data = serpentTools.read(detector_file)
     # use the serpentTools detector objects for the specified detectors
-    DETSerpent2STop = Serpent_data.detectors['Serpent2STop']
-    DETFuelDeposition = Serpent_data.detectors['FuelDeposition']
+    DETSerpent_heat = Serpent_data.detectors[Serpent_det_heat]
+    DETSerpent_fuel = Serpent_data.detectors[Serpent_det_fuel]
 
     ##########################################################
     #### Print Data to CSV in format recognized by STAR-CCM+ #
     ##########################################################
     Heat_csv = STAR_csv(Heat_csv_outfile,Heat_csv_Title)
-    SerpentHeat_to_Star_csv(DETSerpent2STop,Heat_csv,reference_conversion,unit_conversion)
+    SerpentHeat_to_Star_csv(DETSerpent_heat,Heat_csv,reference_conversion,unit_conversion)
 
     ##############################################
     # Check on STAR-CCM+ Simulation              #
@@ -397,18 +424,15 @@ while simulating == 1:
         # Setup the STAR-CCM+ Simulation             #
         ###############################################
         # Simply submits STAR-CCM+ submission script to server
-        run_STAR1 = "qsub STARTop_Job.sh"
-
         os.system(run_STAR1)
 
     # check to see if STAR is done executing
-    STARTop = r'./STARTopDone.txt'
-    time_to_wait = 1000000
-    wait_for_file(STARTop,time_to_wait)
+    
+    wait_for_file(STARTop_Done,time_to_wait_default)
 
     if curtime > 0:
         # Write SERPENTDone.txt file indicating that the current loop has been completed and data extracted
-        file_out = open('./SerpentDone.txt','w')
+        file_out = open(Serpent_done,'w')
         file_out.write('Done')
         file_out.close
 
@@ -416,10 +440,7 @@ while simulating == 1:
     # Update Top interface    #
     ###########################
     # begin by removing old ifc file to avoid any issues with writing to an exisiting file
-    os.remove('HE3TOP.ifc')
-    
-    # reset wait timer for csv file
-    time_to_wait = 1000000
+    os.remove(Serpent_ifc_top.name)
 
 
     # update csv file name
@@ -427,7 +448,7 @@ while simulating == 1:
     STAR_csv_top.name = filename
     
     # make sure file exists before trying to read it
-    wait_for_file(filename,time_to_wait)
+    wait_for_file(filename,time_to_wait_default)
     
     # write from csv to ifc    
     csv_to_ifc(STAR_csv_top,Serpent_ifc_top)
@@ -439,57 +460,13 @@ while simulating == 1:
     # Calculate TH-solution for fuel   #
     ###########################
 
-    # Fuel specific heat capacity
-    cp = 998  # J/(kg*K)
-
-    # Calculate EOI temperatures at (nz) axial nodes
-    # No heat transfer, just deposition
-
-    for i in range(10):
-        # Calculate EOI temperature based on BOI temperature
-        # and energy deposition during current time interval
-
-        # Calculate mass of this node (in kg) (z-slice of reactor)
-        #   Area of Active Fuel (cm^2)  * Length of Node (cm) * density (g/cm^3)  * conversion (g to kg)
-        #   314 Fuel Assemblies (93.16 cm^2 each)
-        #   20 Control Rod Assemblies ( Fuel Assembly Area - Control Rod Area) (65.65 cm^2 each)
-        #   4 HENRI Assemblies (Fuel Assembly Area - HENRI Area) (73.53 cm^2)
-        #   Density of Fuel assumed to be 1.72 g/cm^3 (mostly Graphite)
-        #   z-slice (10 slices / total length of reactor (121 cm))
-        m = ((93.16*314)+(65.65*20)+(75.53*4)) * 12.1 * 1.72 * 1e-3
-
-        # Calculate initial heat in this axial node
-        Q = TBOI[i] * (cp * m)
-
-        # The interface output is Joules in case of time dependent
-        # simulation, no need to multiply with time step
-        dQ = data_fuelpass[i]
-
-        # Calculate new temperature based on new amount of heat
-        TEOI[i] = (Q + dQ) / (cp * m)
+    # removed for now, will write new function and replace as needed
 
     ###########################
-    # Update interface        #
+    # Update fuel interface   #
     ###########################
 
-    file_out = open('./fuel.ifc', 'w')
-
-    # Write the header line (TYPE MAT OUT)
-    file_out.write('2 fuel 0\n')
-
-    # Write the mesh type
-    file_out.write('1\n')
-
-    # Write the mesh size (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
-    file_out.write(fuel_mesh)
-
-    # Write updated fuel temperatures
-    for i in range(10):
-        # Use the base density throughout the simulation
-        # Write density and temperature at this layer
-        file_out.write('-1.72 {}\n'.format(TEOI[i]))
-
-    file_out.close()
+    # removed for now, will write new function and replace as needed
 
     ##########################################################
     # Tell code to move to next timestep #
@@ -508,24 +485,24 @@ while simulating == 1:
 
     if curtime >= 2:
         copyfile('coupledTreat_res.m','Archive/coupledTreat_res'+str(curtime)+'.m')
-    # Delete Files that are not needed between iterations
-    ##
-    # I want to remove the wait timer here and implement a way for the code to check if the files have been read and can be deleted. just using a wait time to hope the files have been read is not very robust and will cause issues in the future. not sure the best way, maybe adding lines to the files saying theyve been read?
-    ##
-    
+
+    ##########################################################
+    # Delete Files that are not needed between iterations    #
+    ##########################################################
 
     # make sure STAR has read the SerpentDone file before deleting it
     if curtime > 0:
-        wait_for_file('ReadTop.txt',time_to_wait)
-        os.remove('SerpentDone.txt')
-        os.remove(STARTop)
+        wait_for_file(STAR_read,time_to_wait)
+        os.remove(Serpent_done)
+        os.remove(STARTop_Done)
+        os.remove(STAR_read)
+        
     # Increment time step
     curtime += 1
 
     # Copy EOI temperatures to BOI vector
 
-    for i in range(10):
-        TBOI[i] = TEOI[i]
+    # removed for now, will write new function and replace as needed
 
 
     ####################################
