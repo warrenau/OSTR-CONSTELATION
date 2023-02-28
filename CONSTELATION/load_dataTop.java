@@ -114,6 +114,9 @@ while (TotalTimeSteps > Current_Time)
     if (f.exists())
     {
     fileTable_2.extract();
+    fw = new FileWriter("ReadTop.txt");
+    fw.write("Read");
+    fw.close();
     }
 // Breaks out of execution loop
     if (break_again > 0)

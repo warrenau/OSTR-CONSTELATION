@@ -12,8 +12,8 @@ The *`.java`* macro used to run the STAR-CCM+ simulation is created by STAR-CCM+
 if (f.exists())
     {
     fileTable_2.extract();
-    fw = new FileWriter("./ReadTop.txt",true)
-    fw.write("Read")
-    fw.close
+    fw = new FileWriter("./ReadTop.txt",true);
+    fw.write("Read");
+    fw.close();
     }
 ```
