@@ -12,8 +12,95 @@ This project utilizes the same software, structure, and coupling method as **CON
 
 ---
 # Usage
-The beginning of the *`ostr_CONSTELATION_3.py`* file contains the inputs required to run the simulation.
+The beginning of the *`ostr_CONSTELATION_3.py`* file contains the inputs required to run the simulation. The inputs have comments in the script that describe what they do, but we will also define them here.
 
+## Main Input File
+```python
+Serpent_file = 'TRIGA'
+```
+This is the name of the Serpent 2 input file being used for the coupled simulation. This should be in its base form, the script will add the necessary lines for the simulation. See the documentation on the Serpent 2 model for more information.
+
+## Time Step Inputs
+```python
+timestep = 5E-6
+```
+This is the time step in seconds for the Serpent 2 simulation.
+
+```python
+STAR_STEP = 100
+```
+This is the number of steps the STAR-CCM+ simulation performs before sharing its data with the Serpent 2 simulation. It must be the ratio of the Serpent 2 time step to the STAR-CCM+ time step. For example if the Serpent 2 time step is 2E-6 and the STAR-CCM+ time step is 5E-8, then `STAR_STEP = 40`.
+
+```python
+step_length = 100
+```
+This is the same as `STAR_STEP`, except that it does not change through the simulation and is used to increment `STAR_STEP`.
+
+## Cluster Job Inputs
+```python
+run_SERP = "qsub SERPENT_job.sh"
+run_STAR1 = "qsub STARTop_Job.sh"
+```
+These are the commands to run the simulations on the cluster.
+
+## Serpent 2 COM Files
+```python
+comin_name = 'com.in'
+comout_name = 'com.out'
+```
+These are the names of the com files used by Serpent to communicate. It is nice to define them here and reference the variable in the code. However, it is not expected that these names change.
+
+## Serpent 2 Mesh Inputs
+```python
+helium_mesh = '1 -100 100 1 0 100 500 -33.02 30.78\n'
+```
+This is the mesh used in Serpent 2 to keep track of the helium-3 of interest. The meshes are defined in the form (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX) If there are multiple STAR-CCM+ simulations modeled, there will need to be a mesh for each one. Additionally, if the user wishes to model fuel temperature feedback, a fuel mesh must be define here.
+
+## Cross-code Communication Inputs
+```python
+reference_conversion = [20.405, 40.605, 226.7903]
+unit_conversion = [0, -1/100, -1/100]
+```
+These are the values used to convert between reference frames. Both inputs are of the form [x, y, z], where the first value is for the x-direction, etc. The description of the `position_Serpent_to_STAR` function later provides more detail on how to use these inputs. The `reference_conversion` input is the difference in translation between the two models' reference frames; and the `unit_conversion` input accounts for any unit change, direction change, or any other applicable multiplier.
+
+```python
+Heat_csv_outfile = 'STAR_HeatTop.csv'
+Heat_csv_Title = ['X(m)','Y(m)','Z(m)','VolumetricHeat(W/m^3)']
+Heat_csv = STAR_csv(Heat_csv_outfile,Heat_csv_Title)
+```
+This set of inputs provides the name and header for the *`.csv`* file Serpent 2 writes out for STAR-CCM+ to read in regarding the volumetric heating of the helium-3.
+
+```python
+Serpent_ifc_top = Serpent_ifc('HE3.ifc','2 helium3 0\n','1\n',helium_mesh)
+```
+This input defines the `Serpent_ifc` class object for the *`.ifc`* file used to pass information with Serpent 2. The first entry is the file name, then the header, then the mesh type, then the mesh itself. Further information is provided in the description of the class later in this document.
+
+```python
+STARHeat_table = './ExtractedData/He3Data_table.csv'
+columns = ['Position in Cartesian 1[X] (cm)', 'Density(g/cm^3) (kg/m^3)', 'Temperature (K)']
+STAR_csv_top = STAR_csv(STARHeat_table,columns)
+```
+This defines the `STAR_csv` class object used for the *`.csv`* file written by STAR-CCM+ to pass information. The first input is the file path and the second input is the header (or names of the columns). Further information about the class is provided later in this document.
+
+```python
+Serpent_det_heat = 'Serpent2STop'
+```
+This input provides the name of the detector that will be read later by the script. Any additional detectors should also be defined here, either for additional STAR-CCM+ simulations or for fuel temperature.
+
+```python
+Serpent_done = './SerpentDone.txt'
+STARTop_Done = './STARTopDone.txt'
+STAR_read = './ReadTop.txt'
+```
+These inputs provide the file names to communicate that each simulation is done with its respective time steps for the cycle. The `STAR_read` input was created to ensure the STAR-CCM+ simulation read the `Serpent_done` file before the file was deleted.
+
+## Constants and Conversions
+```python
+cm3_to_m3 = 1E-6
+time_to_wait_default = 3600
+sig_notdigit = 42
+```
+These are inputs that provide values used later in the script to avoid numbers floating in the script with no definition. The first is the conversion multiplier for going from cubic centimeters to cubic meters. The `time_to_wait_default` constant was selected to be 1 hour in seconds as a standard for most of the wait times in the script. Finally, `sig_notdigit` is the number printed to the terminal when the *`com.out`* file is empty or its contents cannot be converted into an integer. These inputs are used in functions described later in this document.
 
 ---
 # Classes
