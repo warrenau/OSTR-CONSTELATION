@@ -11,6 +11,11 @@ This project utilizes the same software, structure, and coupling method as **CON
 
 
 ---
+# Usage
+The beginning of the *`ostr_CONSTELATION_3.py`* file contains the inputs required to run the simulation.
+
+
+---
 # Classes
 The following section describes the classes defined and used in **CONSTELATION**.
 
@@ -80,3 +85,9 @@ This function reads data from a *`.csv`* file written by STAR-CCM+ and converts 
 
 ## `csv_to_ifc(STAR_csv,Serpent_ifc)`
 This function handles writing the data from a STAR-CCM+ *`.csv`* file to a Serpent 2 *`.ifc`* file. It calls both `min_temp_fix` and `read_to_numpy` within it. The inputs are the `STAR_csv` object for the STAR-CCM+ generated file being read and the `Serpent_ifc` object for the file being written to. While the incoming data has position, density, and temperature, the *`.ifc`* requires only the density and temperature data, so the function truncates the position values off when it writes to the *`.ifc`* file.
+
+## `wait_for_file(file,wait)`
+There are many places in **CONSTELATION** where the script is waiting for a file to be created so it can be read, or be used as communication about the status of the simulation. This function takes in the file name and the maximum wait time in seconds and waits until the file exists. If the file does not exist at the end of the wait time, and error is raised.
+
+## `com_check_digit(line,sig_notdigit)`
+For a reason that may never be determined, sometimes the contents of the *`com.out`* file are removed. This may be caused by the server, the simulation, both, or neither. This function checks that the contents of the file are able to be converted into an integer so that the simulation is not ended by an error trying to convert nothing to an integer. The inputs are the line that was read in from the *`com.out`* file and the false signal to give the output variable if the contents cannot be read properly. This false signal has its own place in the `if` loop that interprets the signal, which continues the simulation as if the signal was to resume current iteration, but it prints out the number provided in the `sig_notdigit` input.
