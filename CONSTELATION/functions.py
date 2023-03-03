@@ -137,6 +137,11 @@ def read_to_numpy(STAR_csv):
     data = data[data[:,0].argsort()]
     return data
 
+# function to fix density units from STAR to Serpent 2
+def density_STAR_to_Serpent(density):
+    density = density / 1000 * -1
+    return density
+
 # function to write data from csv file to ifc file
 # writes only the density and temperature data, not the position values
 # the Serpent interface does not use the position values, since the positions are defined in the Serpent model
@@ -156,6 +161,7 @@ def csv_to_ifc(STAR_csv,Serpent_ifc):
     f.write(Serpent_ifc.mesh)
 
     data = read_to_numpy(STAR_csv)
+    data[:,1] = density_STAR_to_Serpent(data[:,1])
     data = min_temp_fix(data)
     np.savetxt(f, data[:,[1,2]], fmt="%1.6f")
 
