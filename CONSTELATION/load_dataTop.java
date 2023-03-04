@@ -39,7 +39,7 @@ public class load_dataTop extends StarMacro {
 
 // Set Volumetric Heating input to use the table created from wrapping code
     Region region_0 = 
-      simulation_0.getRegionManager().getRegion("3.29.2019_Benchmark_1in");
+      simulation_0.getRegionManager().getRegion("Body_1");
 
     VolumetricHeatSourceProfile volumetricHeatSourceProfile_0 = 
       region_0.getValues().get(VolumetricHeatSourceProfile.class);
@@ -57,7 +57,7 @@ public class load_dataTop extends StarMacro {
 double startTimelevel = simulation_0.getSimulationIterator().getCurrentTimeLevel();
 
 // Changes the number of time steps that one initalization of the STEP command performs
-    simulation_0.getSimulationIterator().setNumberOfSteps(40);
+    simulation_0.getSimulationIterator().setNumberOfSteps(100);
 // Sets the Max Stopping time to a number so it can be compared to current sim time
 double maxstoppingtime = physicalTimeStoppingCriterion_0.getMaximumTime().getValue();
 double TotalTimeSteps;
@@ -74,7 +74,7 @@ break_again = 0;
  Current_Time = 0;
 while (TotalTimeSteps > Current_Time)
 {
-    simulation_0.getSimulationIterator().step(40);
+    simulation_0.getSimulationIterator().step(100);
     sleep_time = 0;
 // Create file says STAR-CCM+ is done simulating
     try {
