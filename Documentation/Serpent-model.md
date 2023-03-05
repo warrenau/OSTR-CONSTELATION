@@ -27,7 +27,7 @@ The time card in Serpent 2 should be set up to match the time steps at which the
 ---
 ## Detector Outputs
 
-The detector defined below is used to provide STAR-CCM+ with the energy deposited in the helium-3 during the time step in Serpent 2. There should be a detector like this for every cartridge or experiment being coupled with STAR-CCM+. For HENRI in TREAT, there are two such detectors, since there are two STAR-CCM+ simulations being coupled with the Serpent 2 model. If the STAR-CC+ geometry uses a quarter slice, like HENRI, the detector volume should be determined by the quarter slice instead of the entire geometry modeled in Serpent 2. This will ensure the STAR-CCM+ simulations are receiving the correct energy deposition.
+The detector defined below is used to provide STAR-CCM+ with the energy deposited in the helium-3 during the time step in Serpent 2. There should be a detector like this for every cartridge or experiment being coupled with STAR-CCM+. For HENRI in TREAT, there are two such detectors, since there are two STAR-CCM+ simulations being coupled with the Serpent 2 model. If the STAR-CCM+ geometry uses a quarter slice, like HENRI, the detector volume should be determined by the quarter slice instead of the entire geometry modeled in Serpent 2. This will ensure the STAR-CCM+ simulations are receiving the correct energy deposition. For a 2-D simulation, the detector should be defined as a representative rectangular slice that does not encompass the entire quarter of the cylindrical cross section. The below example is one of the detectors defined for HENRI in TREAT.
 ```
 % Output Joules for that quarter slice (output Y slice to Pass to STAR)
 %Top of Reactor
@@ -38,6 +38,17 @@ dv 0.1169
 dx 20.405 21.35 1
 dy  38.56  40.605  4
 dz -60.48375 60.48375 500
+```
+
+For the OSTR experiment, the detector is defined as:
+```
+% Heat detector in D5 helium-3 cells
+det D5Heat n
+dr -4 void dm helium3
+dv 0.003609                       % volume of each slice
+dx -11.7653 -11.53035 1
+dy   1.7526   2.2225  4
+dz -33.02    32.3675  500
 ```
 
 
