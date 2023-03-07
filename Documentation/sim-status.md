@@ -85,3 +85,8 @@
     - *`oma.xsdata`*: references to cross section data
     - ostr serpent model
     - still need *`.ifc`* files
+
+- Ran another criticality sim with updated geometry and void in air gap as well.
+    - $k_{eff}=1.00007$
+- Will run transient source generation with the rod positions as they are and with the voids.
+    - TRIGA power is set to: 2200 MW (from Dr. Reese)
