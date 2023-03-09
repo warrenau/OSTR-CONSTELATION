@@ -45,11 +45,11 @@ comin_name = 'com.in'
 comout_name = 'com.out'
 
 # mesh data (NX XMIN XMAX NY YMIN YMAX NZ ZMIN ZMAX)
-helium_mesh = '1 -100 100 1 0 100 500 -33.02 30.78\n'
-fuel_mesh = '1 -500 500 1 -500 500 10 -33.02 30.78\n'
+helium_mesh = '1 -100 100 1 0 100 500 -33.02 32.3675\n'
+#fuel_mesh = '1 -500 500 1 -500 500 10 -33.02 30.78\n'
 
 # convert position data from Serpent to STAR, both units and reference frame
-reference_conversion = [20.405, 40.605, 226.7903]   # difference in reference frames in cm
+reference_conversion = [-11.7653, 2.2225, 67.0111]   # difference in reference frames in cm
 unit_conversion = [0, -1/100, -1/100]             # multiplication factor for unit conversion
 
 # STAR csv file for passing heating to STAR from Serpent
@@ -62,12 +62,12 @@ Serpent_ifc_top = Serpent_ifc('HE3.ifc','2 helium3 0\n','1\n',helium_mesh)
 
 # define the initial STAR_csv object with file name and header
 STARHeat_table = './ExtractedData/He3Data_table.csv'
-columns = ['Position in Cartesian 1[X] (cm)', 'Density(g/cm^3) (kg/m^3)', 'Temperature (K)']
+columns = ['Position 1[X] (m)', 'Density (kg/m^3)', 'Temperature (K)']
 STAR_csv_top = STAR_csv(STARHeat_table,columns)
 
 # detectors
-Serpent_det_heat = 'Serpent2STop'
-Serpent_det_fuel = 'FuelDeposition'
+Serpent_det_heat = 'D5Heat'
+#Serpent_det_fuel = 'FuelDeposition'
 
 # wait time
 time_to_wait_default = 3600  # set default time to wait to an hour. most things should not take that long.
@@ -241,7 +241,7 @@ while simulating == 1:
     Serpent_data = serpentTools.read(detector_file)
     # use the serpentTools detector objects for the specified detectors
     DETSerpent_heat = Serpent_data.detectors[Serpent_det_heat]
-    DETSerpent_fuel = Serpent_data.detectors[Serpent_det_fuel]
+    #DETSerpent_fuel = Serpent_data.detectors[Serpent_det_fuel]
 
     ##########################################################
     #### Print Data to CSV in format recognized by STAR-CCM+ #
