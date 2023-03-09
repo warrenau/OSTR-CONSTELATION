@@ -91,3 +91,4 @@
 - Will run transient source generation with the rod positions as they are and with the voids.
     - TRIGA power is set to: 2200 MW (from Dr. Reese)
     - ran, but I misspelled setsrc. rerunning with 2000MW power and correct spelling.
+    - ran and I have a source file to start a transient simulation from!
