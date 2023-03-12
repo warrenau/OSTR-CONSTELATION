@@ -167,6 +167,25 @@ def csv_to_ifc(STAR_csv,Serpent_ifc):
 
     f.close()
 
+# function to pull keff from _res.m file and append it to a csv file
+def keff_res_to_csv(f_in,f_out,time):
+    """ Reads in Keff from Serpent 2 results file and appends it to a csv file
+
+    Parameters
+    ----------
+    f_in : str
+        Serpent 2 results file (_res.m)
+    f_out : str
+        csv file to append to
+    """
+    res = serpentTools.read(f_in)
+    array = np.zeros([1,3])
+    array[0,0] = time
+    array[0,1] = res.resdata['anaKeff'][0]   # k value
+    array[0,2] = res.resdata['anaKeff'][1]   # associated error value
+    with open(f_out,'a') as csvfile:
+        np.savetxt(csvfile,array,delimiter=',',fmt='%.8e')
+
 # function to handle waiting for file creation which happens a lot during the execution
 def wait_for_file(file,wait):
     time_count = 0

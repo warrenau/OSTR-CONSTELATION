@@ -69,6 +69,11 @@ STAR_csv_top = STAR_csv(STARHeat_table,columns)
 Serpent_det_heat = 'D5Heat'
 #Serpent_det_fuel = 'FuelDeposition'
 
+# results file
+res_file_name = 'coupled'+Serpent_file+'_res.m'
+# keff csv file name
+keff_csv_filename = 'coupled'+Serpent_file+'_keff.csv'
+
 # wait time
 time_to_wait_default = 3600  # set default time to wait to an hour. most things should not take that long.
 
@@ -247,6 +252,12 @@ while simulating == 1:
     #### Print Data to CSV in format recognized by STAR-CCM+ #
     ##########################################################
     SerpentHeat_to_Star_csv(DETSerpent_heat,Heat_csv,reference_conversion,unit_conversion)
+
+    ##########################################################
+    #### Append Keff data from _res.m file to csv file   #####
+    ##########################################################
+    wait_for_file(res_file_name,time_to_wait_default)
+    keff_res_to_csv(res_file_name,keff_csv_filename,curtime*timestep)
 
     ##############################################
     # Check on STAR-CCM+ Simulation              #
