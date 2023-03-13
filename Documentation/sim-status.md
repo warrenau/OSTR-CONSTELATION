@@ -94,3 +94,23 @@
     - ran and I have a source file to start a transient simulation from!
 
 - Going to move experiment to different position in core: G8
+
+
+
+---
+## First Coupled Attempt
+
+### File Structure
+
+```
+|-- Archive/
+|-- ExtractedData/
+|   |-- He3Data_table.csv
+|-- ostr_CONSTELATION_3.py
+|-- functions.py
+|-- ostr-coupled-3e-1mm-poly.sim
+|-- load_dataTop.java
+|-- TRIGA_D5
+|-- STAR_job.sh
+|-- Serpent_job.sh
+```

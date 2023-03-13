@@ -18,6 +18,7 @@ The file structure required to begin the simulation is displayed below. This exa
 |-- ExtractedData/
 |   |-- He3Data_table.csv
 |-- CONSTELATION.py
+|-- functions.py
 |-- STAR_coupled.sim
 |-- STAR_load_data.java
 |-- Serpent_input
