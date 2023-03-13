@@ -9,6 +9,23 @@ This project utilizes the same software, structure, and coupling method as **CON
 - STAR-CCM+ (used version 2020.2.1 on INL HPC)
 - Serpent 2 (used version 2.1.31 on INL HPC)
 
+---
+# File Structure
+
+The file structure required to begin the simulation is displayed below. This example is for a simple model using only one STAR-CCM+ simulation and no other coupled physics, like fuel feedback.
+```
+|-- Archive/
+|-- ExtractedData/
+|   |-- He3Data_table.csv
+|-- CONSTELATION.py
+|-- STAR_coupled.sim
+|-- STAR_load_data.java
+|-- Serpent_input
+|-- STAR_job.sh
+|-- Serpent_job.sh
+```
+
+Any additional STAR-CCM+ simulations will require their own *`_job.sh`* and *`_load_data.java`* files. The user can also add fuel feedback and may need to place an initial *`fuel.ifc`* file in the directory and enable or write fuel functions in **CONSTELATION** as necessary.
 
 ---
 # Usage
