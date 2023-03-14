@@ -3,7 +3,7 @@
 
 
 ---
-## Prepping OSTR Serpent Model
+# Prepping OSTR Serpent Model
 - running *`TRIGA_05tube_D5_void`* on INL HPC 6 nodes, 48 cores each
     - $k_{eff}=1.02308$ with 
 
@@ -94,13 +94,14 @@
     - ran and I have a source file to start a transient simulation from!
 
 - Going to move experiment to different position in core: G8
+    - steady state results with experiment in G8 made of aluminum vs no experiment in the core show a reactivity change of -$0.11, which is less than $0.25, so the reactor does not need to be re-calibrated.
 
 
 
 ---
-## First Coupled Attempt
+# First Coupled Attempt
 
-### File Structure
+## File Structure
 
 ```
 |-- Archive/
@@ -118,3 +119,15 @@
 |-- STAR_job.sh
 |-- Serpent_job.sh
 ```
+
+## INL HPC Settings
+
+### Serpent Model
+- will first try 25 nodes
+    - the *`source.live`* file is about 14GB, compared to 55GB for the TREAT model
+    - the TREAT model uses 85 Nodes and 16TB of memory
+    - if the *`source.live`* file is an indication in a linear way, the TRIGA model will need 4.4TB of memory, so 25 nodes is a good starting point. It will probably need more, but I don't know how much more.
+
+
+### STAR-CCM+ Model
+- will try 1 node like for TREAT sim

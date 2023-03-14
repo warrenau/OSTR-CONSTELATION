@@ -23,7 +23,7 @@ from functions import *
 #                  INPUTS                             #
 #######################################################
 # Serpent input file
-Serpent_file = 'TRIGA'
+Serpent_file = 'TRIGA_D5'
 
 # Time steps need to match up between STAR-CCM+ and Serpent 2 so the information passed between them is happening at the same time. This does not define the time steps for the respective codes.
 # timestep used for simulation
@@ -62,7 +62,7 @@ Serpent_ifc_top = Serpent_ifc('HE3.ifc','2 helium3 0\n','1\n',helium_mesh)
 
 # define the initial STAR_csv object with file name and header
 STARHeat_table = './ExtractedData/He3Data_table.csv'
-columns = ['Position 1[X] (m)', 'Density (kg/m^3)', 'Temperature (K)']
+columns = ['Position[X] (m)', 'Density (kg/m^3)', 'Temperature (K)']
 STAR_csv_top = STAR_csv(STARHeat_table,columns)
 
 # detectors
