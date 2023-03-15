@@ -127,6 +127,8 @@
     - the *`source.live`* file is about 14GB, compared to 55GB for the TREAT model
     - the TREAT model uses 85 Nodes and 16TB of memory
     - if the *`source.live`* file is an indication in a linear way, the TRIGA model will need 4.4TB of memory, so 25 nodes is a good starting point. It will probably need more, but I don't know how much more.
+- 25 nodes was not enough, going to try 35 nodes
+- 35 nodes was also not enough, going to try 50 nodes
 
 
 ### STAR-CCM+ Model
