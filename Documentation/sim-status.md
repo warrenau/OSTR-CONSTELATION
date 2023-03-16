@@ -135,6 +135,8 @@
     - also had a problem at line 188 in *`ostr_CONSTELATION_3.py`* file. no *`com.out`* file, but I mightve deleted it before looking at the terminal output.
 - 80 nodes was not enough, trying 90 nodes.
 - 90 nodes was not enough, trying 100 nodes.
+- 100 nodes was not enough, trying 110 nodes.
+- 110 nodes was not enough, trying 120 nodes.
 
 
 ### STAR-CCM+ Model
