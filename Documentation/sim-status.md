@@ -146,7 +146,7 @@
 
 replaced all fuel with one material m1507, trying 50 nodes
 - error due to detector file name being written wrong in the code. fixed and am trying again
-
+- error due to variables not defined in function file, specifically with `SerpentHeat_to_Star_csv` function. fixed and trying again.
 
 
 
