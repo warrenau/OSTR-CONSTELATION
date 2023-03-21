@@ -145,6 +145,8 @@
 - 170 nodes was not enough, trying 180 nodes.
 
 replaced all fuel with one material m1507, trying 50 nodes
+- error due to detector file name being written wrong in the code. fixed and am trying again
+
 
 
 
