@@ -144,6 +144,8 @@
 - 160 nodes was not enough, trying 170 nodes.
 - 170 nodes was not enough, trying 180 nodes.
 
+replaced all fuel with one material m1507, trying 50 nodes
+
 
 
 
