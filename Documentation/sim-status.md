@@ -141,6 +141,8 @@
 - 130 nodes was not enough, trying 140 nodes. (there are more error messages at the end of the output file now, so hopefully we are getting closer.)
 - 140 nodes was not enough, trying 150 nodes.
 - 150 nodes was not enough, trying 160 nodes.
+- 160 nodes was not enough, trying 170 nodes.
+
 
 
 ### STAR-CCM+ Model
