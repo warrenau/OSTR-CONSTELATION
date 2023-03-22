@@ -148,7 +148,17 @@ replaced all fuel with one material m1507, trying 50 nodes
 - error due to detector file name being written wrong in the code. fixed and am trying again
 - error due to variables not defined in function file, specifically with `SerpentHeat_to_Star_csv` function. fixed and trying again.
 - *`_res.m`* file was not created. Im going to comment that part out from the code to get it to run and troubleshoot the reactivity tracking later.
-
+- found typo in heat unit conversion: fixed and restarted sim
+- apparently I forgot to put the star file in the directory?!
+- got a `error: cannot find symbol` in *`.java`* file for `fw = new FileWriter('ReadTop.txt')` changed to:
+```java
+    {
+    fileTable_2.extract();
+    FileWriter readwriter = new FileWriter("ReadTop.txt");
+    readwriter.write("Read");
+    readwriter.close();
+    }
+```
 
 
 
