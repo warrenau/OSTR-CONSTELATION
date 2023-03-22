@@ -147,6 +147,8 @@
 replaced all fuel with one material m1507, trying 50 nodes
 - error due to detector file name being written wrong in the code. fixed and am trying again
 - error due to variables not defined in function file, specifically with `SerpentHeat_to_Star_csv` function. fixed and trying again.
+- *`_res.m`* file was not created. Im going to comment that part out from the code to get it to run and troubleshoot the reactivity tracking later.
+
 
 
 
