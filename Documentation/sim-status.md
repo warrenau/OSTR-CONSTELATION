@@ -159,6 +159,18 @@ replaced all fuel with one material m1507, trying 50 nodes
     readwriter.close();
     }
 ```
+- got an error in the *`.java`* file: `error: unreported exception java.io.IOException`. added error handler into code:
+```java
+if (f.exists())
+    try {
+    fileTable_2.extract();
+    FileWriter readwriter = new FileWriter("ReadTop.txt");
+    readwriter.write("Read");
+    readwriter.close();
+    } catch (IOException e) {
+            e.printStackTrace();
+    }
+```
 
 
 
