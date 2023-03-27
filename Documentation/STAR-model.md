@@ -18,14 +18,14 @@ if (f.exists())
     }
 ```
 
-To modify the *`.java`* macro for using different models, there are a couple of things that need to be changed. The first is the name of the geometry part that the macro will look at.
+To modify the *`.java`* macro for using different models, there are a couple of things that need to be changed. The first is the name of the `Region` that the macro will look at. I originally thought this was the Body `Part` because they have the same name and I found the `Part` first, but it threw an error when the `Region` was not named correctly.
 ```java
 Region region_0 = 
     simulation_0.getRegionManager().getRegion("Body_1");
 ```
 The part in quotes is the name listed in the STAR-CCM+ simulation. The image below shows the corresponding STAR-CCM+ dropdown for the example of code above.
 
-![STAR-CCM+ Model Geometry Dropdown](pics/ostr-coupled-geometry-dropdown-highlight.PNG)
+![STAR-CCM+ Model Geometry Dropdown](pics/ostr-coupled-region-dropdown.PNG)
 
 Additionally, the number of time steps to be simulated between stops must be altered for each simulation. The time step value for the STAR-CCM+ simulation will most likely be smaller than the time step for the Serpent 2 simulation, possibly by multiple orders of magnitude. The input in the *`.java`* macro is the number of time steps STAR-CCM+ will simulate before waiting for the Serpent 2 time step to finish. For example, if the time step for the Serpent 2 simulation is 5E-6 s and the time step for the STAR-CCM+ simulation is 5E-8 s, the value input in the macro should be 100. Below is an example of the code where this value needs to be changed.
 
