@@ -149,6 +149,14 @@ replaced all fuel with one material m1507, trying 50 nodes
 - error due to variables not defined in function file, specifically with `SerpentHeat_to_Star_csv` function. fixed and trying again.
 - *`_res.m`* file was not created. Im going to comment that part out from the code to get it to run and troubleshoot the reactivity tracking later.
 - found typo in heat unit conversion: fixed and restarted sim
+
+
+
+
+
+### STAR-CCM+ Model
+- will try 1 node like for TREAT sim
+
 - apparently I forgot to put the star file in the directory?!
 - got a `error: cannot find symbol` in *`.java`* file for `fw = new FileWriter('ReadTop.txt')` changed to:
 ```java
@@ -181,9 +189,3 @@ Class: class star.energy.VolumetricHeatSourceProfile
    error: Condition not found in ConditionManager
 ```
 - updated `Energy Source Option` under `Physics Conditions` in `Region` to `Volumetric Heat Source` so that it hopefully will work with the table exported by **CONSTELATION** now. trying again.
-
-
-
-
-### STAR-CCM+ Model
-- will try 1 node like for TREAT sim
