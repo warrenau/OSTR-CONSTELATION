@@ -174,6 +174,14 @@ if (f.exists())
 
 - got an error: `error: Named object "Body_1" does not exist in manager`. Renamed the region in the cfd file from "Body 1" to "Body_1".
 
+- got an error: 
+```
+Class: class star.energy.VolumetricHeatSourceProfile
+   ConditionManager: star.common.PhysicsValueManager_25795
+   error: Condition not found in ConditionManager
+```
+- updated `Energy Source Option` under `Physics Conditions` in `Region` to `Volumetric Heat Source` so that it hopefully will work with the table exported by **CONSTELATION** now. trying again.
+
 
 
 
