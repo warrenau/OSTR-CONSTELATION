@@ -202,3 +202,7 @@ Command: StepSimulation
    command: CommandComplete
    error: Server Error
 ```
+- fixed the error by adding the following code to the *`.java`* macro. retrying on HPC.
+```java
+    volumetricHeatSourceProfile_0.getMethod(XyzTabularScalarProfileMethod.class).setData("VolumetricHeat")
+```
