@@ -47,6 +47,8 @@ public class load_dataTop extends StarMacro {
     volumetricHeatSourceProfile_0.setMethod(XyzTabularScalarProfileMethod.class);
 
     volumetricHeatSourceProfile_0.getMethod(XyzTabularScalarProfileMethod.class).setTable(fileTable_2);
+
+    volumetricHeatSourceProfile_0.getMethod(XyzTabularScalarProfileMethod.class).setData("VolumetricHeat");
  
  // Initializes the simulation   
     solution_0.initializeSolution();

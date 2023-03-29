@@ -189,3 +189,16 @@ Class: class star.energy.VolumetricHeatSourceProfile
    error: Condition not found in ConditionManager
 ```
 - updated `Energy Source Option` under `Physics Conditions` in `Region` to `Volumetric Heat Source` so that it hopefully will work with the table exported by **CONSTELATION** now. trying again.
+
+- got an error:
+```
+VolumetricHeatSourceProfileProfile: profile method properties not set correctly:
+Non-existent column "null"
+Command: StepSimulation
+   error: Server Error
+VolumetricHeatSourceProfileProfile: profile method properties not set correctly:
+Non-existent column "null"
+Command: StepSimulation
+   command: CommandComplete
+   error: Server Error
+```
