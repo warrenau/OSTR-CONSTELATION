@@ -206,3 +206,20 @@ Command: StepSimulation
 ```java
     volumetricHeatSourceProfile_0.getMethod(XyzTabularScalarProfileMethod.class).setData("VolumetricHeat")
 ```
+
+- got error:
+```
+Playing macro: /home/warraust/TRIGA/ostr-coupled/load_dataTop.java
+load_dataTop.java:64: warning: [deprecation] getValue() in star.common.ScalarPhysicalQuantity has been deprecated
+double maxstoppingtime = physicalTimeStoppingCriterion_0.getMaximumTime().getValue();
+                                                                         ^
+load_dataTop.java:119: error: unreported exception java.io.IOException; must be caught or declared to be thrown
+    FileWriter readwriter = new FileWriter("ReadTop.txt");
+                            ^
+load_dataTop.java:120: error: unreported exception java.io.IOException; must be caught or declared to be thrown
+    readwriter.write("Read");
+                    ^
+load_dataTop.java:121: error: unreported exception java.io.IOException; must be caught or declared to be thrown
+    readwriter.close();
+```
+- after looking at the *`.java`* file, it looks like I did not upload the new file to the HPC after yesterday's edits. However, the HPC file did have the `java.io.IOException` fix and the local file did not. Not sure what is up with that. I am going to make sure both files match and have the fixes for both the error handling and the STAR table stuff.

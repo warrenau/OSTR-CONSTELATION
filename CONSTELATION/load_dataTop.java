@@ -113,13 +113,16 @@ while (TotalTimeSteps > Current_Time)
         }
     }
 // If it does exist then just reload and continue simulation
-    if (f.exists())
-    {
-    fileTable_2.extract();
-    FileWriter readwriter = new FileWriter("ReadTop.txt");
-    readwriter.write("Read");
-    readwriter.close();
+  if (f.exists()) {
+    try {
+        fileTable_2.extract();
+        FileWriter readwriter = new FileWriter("ReadTop.txt");
+        readwriter.write("Read");
+        readwriter.close();
+    } catch (IOException e) {
+            e.printStackTrace();
     }
+  } 
 // Breaks out of execution loop
     if (break_again > 0)
     {
