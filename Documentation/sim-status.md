@@ -151,6 +151,17 @@ replaced all fuel with one material m1507, trying 50 nodes
 - found typo in heat unit conversion: fixed and restarted sim
 
 
+March 31, 2023:
+- got error after reading in *`HE3.ifc`*: 
+```
+Fatal error in function SetIFCTMSLimits:
+
+Material temperature 300.000000 below TMS minorant for material helium3
+```
+- looking at the two files, *`HE3.ifc`* and *`He3Data_table.csv`*, the *`.ifc`* has the correct values in the correct columns (density, temperature). However, the temperatures are all 300K even though in the *`.csv`* file they are ~~302K~~ 294-297K (The initial file is 302K, but the second file that was generated after the first star cycle had lower temperatures in it). ~~This means that the temp fix function is working too well.~~ The density conversion appears to be working correctly. I may increase the number of decimals reported because the density only has one significant digit a the moment with the low starting density.
+- changed `min_temp_fix` function to set min temp to 301K instead of 300K. Maybe the precision was causing a problem? Also increased the decimals reported from `"%1.6f"` to `"%1.9f"` to give more decimals for the density value.
+
+
 
 
 

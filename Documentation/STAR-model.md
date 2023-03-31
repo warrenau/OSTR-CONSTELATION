@@ -9,13 +9,16 @@ Development of OSTR HENRI STAR-CCM+ model can be found here: [OSTR STAR Model](h
 # Java Macro
 The *`.java`* macro used to run the STAR-CCM+ simulation is created by STAR-CCM+, but needs to be modified. One of the modifications is to provide **CONSTELATION** with confirmation that the STAR-CCM+ simulation has read the *`SerpentDone.txt`* file so that the file is not deleted before the STAR-CCM+ simulation has time to read it. The following code checks if the done file exists, and if it does, a new file is created and written to for **CONSTELATION** to read.
 ```java
-if (f.exists())
-    {
-    fileTable_2.extract();
-    fw = new FileWriter("./ReadTop.txt",true);
-    fw.write("Read");
-    fw.close();
+  if (f.exists()) {
+    try {
+        fileTable_2.extract();
+        FileWriter readwriter = new FileWriter("ReadTop.txt");
+        readwriter.write("Read");
+        readwriter.close();
+    } catch (IOException e) {
+            e.printStackTrace();
     }
+  } 
 ```
 
 To modify the *`.java`* macro for using different models, there are a couple of things that need to be changed. The first is the name of the `Region` that the macro will look at. I originally thought this was the Body `Part` because they have the same name and I found the `Part` first, but it threw an error when the `Region` was not named correctly.

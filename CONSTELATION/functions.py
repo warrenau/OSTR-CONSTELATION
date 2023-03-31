@@ -115,7 +115,7 @@ def min_temp_fix(array):
     """
     for point in range(len(array)):
         if array[point,2] < 300.0:
-            array[point,2] = 300.0
+            array[point,2] = 301.0  # changed from 300 bc I got an error about 300 being below the TMS minorant for helium3 material in Serpent. hope it works.
     return array
 
 # function to read in csv and convert from pandas to numpy array (should maybe just use numpy array to read in the first place?)
@@ -164,7 +164,7 @@ def csv_to_ifc(STAR_csv,Serpent_ifc):
     data = read_to_numpy(STAR_csv)
     data[:,1] = density_STAR_to_Serpent(data[:,1])
     data = min_temp_fix(data)
-    np.savetxt(f, data[:,[1,2]], fmt="%1.6f")
+    np.savetxt(f, data[:,[1,2]], fmt="%1.9f")
 
     f.close()
 
