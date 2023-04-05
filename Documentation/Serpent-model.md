@@ -72,3 +72,13 @@ The header and first lines that **CONSTELATION** writes for the HENRI/TREAT mode
 ```
 
 **CONSTELATION** will read the *`.csv`* output from STAR-CCM+ and convert it to the correct format for Serpent to read and then write the information to the *`.ifc`* file. The density and temperature data are appended into the file below the `[MESH DATA]` line.
+
+
+---
+## Material TMS Limits
+
+Because of the error being thrown when the temperature of the helium-3 was 300K (`Material temperature 300.000000 below TMS minorant for material helium3`), the `tft` argument needs to be added to the material definition of helium-3 in Serpent 2:
+```
+mat helium3 -0.005  tft 300 10000    % helium-3 at 0.005 g/cm^3 (5 kg/m^3)
+	 2003.03c   1
+```

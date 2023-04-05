@@ -170,6 +170,7 @@ Material temperature 301.000000 below TMS minorant for material helium3
 Simulation aborted.
 ```
 - reached out to Cole. I don't know how to fix this one right now. I will keep looking into it though.
+- Dr. Mignot scrolled further through some slides I also found last week and found the `tft` input for `mat` cards to set the TMS temperature limits.
 
 
 
