@@ -171,7 +171,7 @@ Simulation aborted.
 ```
 - reached out to Cole. I don't know how to fix this one right now. I will keep looking into it though.
 - Dr. Mignot scrolled further through some slides I also found last week and found the `tft` input for `mat` cards to set the TMS temperature limits.
-
+- going to rerun source sim with updated model with only one fuel material, TMS limits, etc. Cole mentioned that the steady state / source run sets the temperature limits, then I realized that I had made a lot of changes to the model since I ran the source simulation and it would prolly be a good idea to run it. I also used the *`.ifc`* file to set the density of the helium-3. Hopefully it works and is happy with the new fuel load.
 
 
 
