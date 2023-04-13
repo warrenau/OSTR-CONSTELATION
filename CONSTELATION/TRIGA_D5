@@ -5080,7 +5080,7 @@ set edepmode 2
 set power 2000000000   % SS 1MW, peak transient 2000MW
 
 % ----- Source generation for transient sim ----- %
-%set saverc "./Source" 0.09
+%set savesrc "./Source" 0.09
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Transient Inputs

@@ -173,6 +173,8 @@ Simulation aborted.
 - Dr. Mignot scrolled further through some slides I also found last week and found the `tft` input for `mat` cards to set the TMS temperature limits.
 - going to rerun source sim with updated model with only one fuel material, TMS limits, etc. Cole mentioned that the steady state / source run sets the temperature limits, then I realized that I had made a lot of changes to the model since I ran the source simulation and it would prolly be a good idea to run it. I also used the *`.ifc`* file to set the density of the helium-3. Hopefully it works and is happy with the new fuel load.
 
+- When running source simulation, I thought the Source files were deleted when I accidentally queued up the coupled simulation without switching back to transient mode. However, the source input command actually had a typo: `set saverc` instead of `set savesrc`. I have fixed this in both input files in this repo, as well as the file on the cluster. Hopefully it works this time. Not sure how this typo happened since Im pretty sure I copied it from another file.
+
 
 
 ### STAR-CCM+ Model
