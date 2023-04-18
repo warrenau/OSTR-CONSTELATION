@@ -269,15 +269,18 @@ while simulating == 1:
         ###############################################
         # Simply submits STAR-CCM+ submission script to server
         os.system(run_STAR1)
+        time_to_wait_STAR = 43200   # sets time to wait for STAR done to 1 day to allow for STAR to wait in queue without timing out CONSTELATION in case it takes a while
+    elif curtime > 0:
+        # Write SERPENTDone.txt file indicating that the current loop has been completed and data extracted
+        with open(Serpent_done,'w') as file_out:
+            file_out.write('Done')
+        time_to_wait_STAR = time_to_wait_default    # sets time to wait for STAR done to 1 hour for all time steps after initial
+    else:
+        raise ValueError("curtime is less than zero or cannot be read.")
 
     # check to see if STAR is done executing
-    wait_for_file(STARTop_Done,time_to_wait_default)
+    wait_for_file(STARTop_Done,time_to_wait_STAR)
 
-    if curtime > 0:
-        # Write SERPENTDone.txt file indicating that the current loop has been completed and data extracted
-        file_out = open(Serpent_done,'w')
-        file_out.write('Done')
-        file_out.close
 
     ###########################
     # Update Top interface    #
