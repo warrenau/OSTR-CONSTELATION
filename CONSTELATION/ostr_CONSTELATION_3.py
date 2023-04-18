@@ -316,9 +316,8 @@ while simulating == 1:
     ##########################################################
     # Tell code to move to next timestep #
     ##########################################################
-    file_out = open('com.in','w')
-    file_out.write(str(signal.SIGUSR2.value))
-    file_out.close()
+    with open(comin_name,'w') as file_out:
+        file_out.write(str(signal.SIGUSR2.value))
 
     ##########################################################
     # Archive Files                                      #####
