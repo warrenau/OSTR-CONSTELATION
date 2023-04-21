@@ -249,3 +249,9 @@ load_dataTop.java:121: error: unreported exception java.io.IOException; must be 
 
 April 15, 2023:
 - not enough STAR licenses on hpc
+
+
+
+### Combined
+ April 21, 2023:
+ - I changed the requested time to 48 hours in hope it will get through the queue before the cluster goes down.
