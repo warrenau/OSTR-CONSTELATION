@@ -175,6 +175,8 @@ Simulation aborted.
 
 - When running source simulation, I thought the Source files were deleted when I accidentally queued up the coupled simulation without switching back to transient mode. However, the source input command actually had a typo: `set saverc` instead of `set savesrc`. I have fixed this in both input files in this repo, as well as the file on the cluster. Hopefully it works this time. Not sure how this typo happened since Im pretty sure I copied it from another file.
 
+- Got a problem with results file not being created because I forgot to comment out the lines involving the results file. (April 26, 2023)
+
 
 
 ### STAR-CCM+ Model
