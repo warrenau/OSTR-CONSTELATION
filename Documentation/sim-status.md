@@ -179,6 +179,8 @@ Simulation aborted.
 
 - Got a problem with the detector file bc Serpent did not run its second cycle. Going to make the same changes as for the TREAT model. Not letting the script move on from reading *`com.out`* until the signal is `SIGUSR2`.
 
+- The terminal output had the `Resume Current Iteration` message for over an hour. I commented out the `set ccmaxiter 1` line and hopefully that fixes it. Otherwise, the other changes I just made are garbage basically.
+
 
 
 ### STAR-CCM+ Model

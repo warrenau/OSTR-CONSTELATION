@@ -5089,7 +5089,7 @@ set power 2000000000   % SS 1MW, peak transient 2000MW
 tme tsim 2 1000 0 5E-3
 % Total Neutron Population, number of batches, and time structure
 set nps  500000000 2500 tsim
-set ccmaxiter 1
+%set ccmaxiter 1
 
 % *******************************************
 % *** Plots
