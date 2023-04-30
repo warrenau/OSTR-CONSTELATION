@@ -177,6 +177,8 @@ Simulation aborted.
 
 - Got a problem with results file not being created because I forgot to comment out the lines involving the results file. (April 26, 2023)
 
+- Got a problem with the detector file bc Serpent did not run its second cycle. Going to make the same changes as for the TREAT model. Not letting the script move on from reading *`com.out`* until the signal is `SIGUSR2`.
+
 
 
 ### STAR-CCM+ Model
