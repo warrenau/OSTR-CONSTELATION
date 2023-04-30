@@ -181,6 +181,9 @@ Simulation aborted.
 
 - The terminal output had the `Resume Current Iteration` message for over an hour. I commented out the `set ccmaxiter 1` line and hopefully that fixes it. Otherwise, the other changes I just made are garbage basically.
 
+- this change did not work. the simulation got stuck on printing `Resume Current Iteration`. I found another example script from Serpent for coupled transient sims that includes an additional while loop using `iterating` to control the time steps. It looks like I will need to add another loop to the script and tell Serpent to continue with a signal written to *`com.in`*. The simulation did move to the next step when I manually changed the signal.
+- I ran into a storage issue, which may have been bc of the huge amounts of terminal output caused by the simulation getting stuck in that loop.
+
 
 
 ### STAR-CCM+ Model
