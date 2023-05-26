@@ -273,7 +273,7 @@ April 15, 2023:
 
  ## New Sim with Adiabatic wall
 
-Resuls from previous successful attempt look really good, but the temperature goes off the scale at one of the measurement positions. To investigate this further, another simulation is to be performed with an adiabatic wall condition instead of a convection wall condition and more things are going to be tracked in STAR over time. No changes are being made to the coupling script or the Serpent model at this time.
+Results from previous successful attempt look really good, but the temperature goes off the scale at one of the measurement positions. To investigate this further, another simulation is to be performed with an adiabatic wall condition instead of a convection wall condition and more things are going to be tracked in STAR over time. No changes are being made to the coupling script or the Serpent model at this time.
 
 In STAR model:
  - added scenes for density and temperature
@@ -282,3 +282,34 @@ In STAR model:
 
 In Serpent model:
 - no changes
+
+
+## Adiabatic Wall and 40 STAR steps per Serpent step
+
+In STAR model:
+- change iteration count in *`load_dataTop.java`* file from 100 to 40
+
+
+In Serpent model:
+- change time step from 5e-6 to 2e-6 s
+- reduce number of neutrons
+    - total neutrons from 5000000000 to 4800000000, with only 2400 cycles instead of 2500
+    - utilizes all CPUs and maintains neutrons per cycle with steady source generation
+```
+%    NAME TYPE Nbins Tmin Tmax
+tme tsim 2 2500 0 5E-3
+% Total Neutron Population, number of batches, and time structure
+set nps  4800000000 2400 tsim
+```
+
+In CONSTELATION file:
+- change time step to 2E-6
+- change STAR STEP input and second STEP input to 40
+```
+# timestep used for simulation
+timestep = 2E-6
+# The number of time steps that STAR will simulate before checking for SERPENT completion and then export Data
+STAR_STEP = 40
+# Second variable used to stay constant in loop
+step_length = 40
+```

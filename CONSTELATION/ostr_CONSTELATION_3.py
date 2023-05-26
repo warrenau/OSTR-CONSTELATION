@@ -27,11 +27,11 @@ Serpent_file = 'TRIGA_D5'
 
 # Time steps need to match up between STAR-CCM+ and Serpent 2 so the information passed between them is happening at the same time. This does not define the time steps for the respective codes.
 # timestep used for simulation
-timestep = 5E-6
+timestep = 2E-6
 # The number of time steps that STAR will simulate before checking for SERPENT completion and then export Data
-STAR_STEP = 100
+STAR_STEP = 40
 # Second variable used to stay constant in loop
-step_length = 100
+step_length = 40
 
 # constants and conversions
 cm3_to_m3 = 1E-6    # convert cubic centimeters to cubic meters
