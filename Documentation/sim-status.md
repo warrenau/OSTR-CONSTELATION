@@ -269,3 +269,16 @@ April 15, 2023:
 
  April 26, 2023:
  - Started sim with 168 hours requested on all jobs and 336 hours on virtual desktop
+
+
+ ## New Sim with Adiabatic wall
+
+Resuls from previous successful attempt look really good, but the temperature goes off the scale at one of the measurement positions. To investigate this further, another simulation is to be performed with an adiabatic wall condition instead of a convection wall condition and more things are going to be tracked in STAR over time. No changes are being made to the coupling script or the Serpent model at this time.
+
+In STAR model:
+ - added scenes for density and temperature
+ - added total energy report, monitor, and plot
+ - changed wall condition to be adiabatic
+
+In Serpent model:
+- no changes
