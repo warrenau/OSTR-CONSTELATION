@@ -321,3 +321,5 @@ tme tsim 2 2500 0 5E-3
 % Total Neutron Population, number of batches, and time structure
 set nps  480000000 2400 tsim
 ```
+
+Got an error about the He3_Data table from STAR because I forgot to change the time step frequency for updates. Fixed.
