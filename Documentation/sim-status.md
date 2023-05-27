@@ -314,10 +314,10 @@ STAR_STEP = 40
 step_length = 40
 ```
 
-This set up made the saved files enourmous and used up all of my file space on the cluster. Changing total number of neutrons to 48000000 to see if that works better. Hopefully the statistics are still good.
+Looks like I cant count zeros. I added too many when changing the number of neutrons. It was 500000000, not 5000000000, so it should be 480000000, not 4800000000. I probably dont even need this many, but we will give it a try.
 ```
 %    NAME TYPE Nbins Tmin Tmax
 tme tsim 2 2500 0 5E-3
 % Total Neutron Population, number of batches, and time structure
-set nps  48000000 2400 tsim
+set nps  480000000 2400 tsim
 ```
