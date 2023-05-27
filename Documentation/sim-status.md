@@ -313,3 +313,11 @@ STAR_STEP = 40
 # Second variable used to stay constant in loop
 step_length = 40
 ```
+
+This set up made the saved files enourmous and used up all of my file space on the cluster. Changing total number of neutrons to 48000000 to see if that works better. Hopefully the statistics are still good.
+```
+%    NAME TYPE Nbins Tmin Tmax
+tme tsim 2 2500 0 5E-3
+% Total Neutron Population, number of batches, and time structure
+set nps  48000000 2400 tsim
+```
