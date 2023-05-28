@@ -323,3 +323,5 @@ set nps  480000000 2400 tsim
 ```
 
 Got an error about the He3_Data table from STAR because I forgot to change the time step frequency for updates. Fixed.
+
+Apparently the fix didnt actually save to the file? In the STAR gui it had the correct number and I saved it, then pushed and reuploaded to HPC, but the file uploaded to HPC had the old time step frequency. Trying again.
