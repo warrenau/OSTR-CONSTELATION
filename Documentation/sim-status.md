@@ -325,3 +325,5 @@ set nps  480000000 2400 tsim
 Got an error about the He3_Data table from STAR because I forgot to change the time step frequency for updates. Fixed.
 
 Apparently the fix didnt actually save to the file? In the STAR gui it had the correct number and I saved it, then pushed and reuploaded to HPC, but the file uploaded to HPC had the old time step frequency. Trying again.
+
+CONSTELATION stopped running bc it timed out looking for *`Read_Top.text`*, but the Serpent and STAR sims did not stop. Coupled sim got to time step 7. Serpent is waiting and STAR kept running. STAR got to over time step 37000, which is 1.88E-3 seconds. Will investigate further at a later time. I need to focus on writing for now.
